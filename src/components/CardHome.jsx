@@ -11,7 +11,7 @@ const homeServices = [
       'Consulta disponibilidad en la biblioteca y aparta un espacio de estudio por horario sin traslapes.',
     image: imgCubiculos,
     imageAlt: 'Espacios de estudio y cubículos en biblioteca',
-    href: '#',
+    href: '/reserva-de-cubiculo',
   },
   {
     id: 'equipo',

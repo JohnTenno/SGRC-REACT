@@ -132,9 +132,45 @@
     @apply focus:border-uach-gold-400/60 focus:bg-uach-purple-900/80 focus:outline-none focus:ring-2 focus:ring-uach-gold-400/25;
     @apply disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-uach-purple-950/40 disabled:text-white/50;
   }
+
+  /** Hero más bajo y sin puntos del carrusel — solo en reserva de cubículos */
+  .reserva-cubiculo-hero header > div {
+    @apply !min-h-[150px] sm:!min-h-[200px] lg:!min-h-[240px];
+  }
+
+  .reserva-cubiculo-hero header > div > .relative.z-10 {
+    @apply !min-h-[150px] py-6 sm:!min-h-[200px] sm:px-10 lg:!min-h-[240px];
+  }
+
+  .reserva-cubiculo-hero header h1 {
+    @apply text-2xl sm:text-3xl;
+  }
+
+  .reserva-cubiculo-hero header p {
+    @apply mt-3 text-sm sm:text-base;
+  }
+
+  .reserva-cubiculo-hero header button {
+    @apply hidden;
+  }
 }
 
 @layer utilities {
+  @keyframes slide-up-action-bar {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-up-action-bar {
+    animation: slide-up-action-bar 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
   @keyframes feedback-fade-in {
     from {
       opacity: 0;

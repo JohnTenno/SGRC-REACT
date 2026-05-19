@@ -309,7 +309,7 @@ export function Navbar() {
   if (!user) return null
 
   return (
-    <header className="border-b border-white/10 bg-uach-purple-900 shadow-md">
+    <header className="sticky top-0 z-40 shrink-0 border-b border-white/10 bg-uach-purple-900 shadow-md">
       <nav
         className="page-shell flex min-h-16 items-center justify-between gap-4 py-4"
         aria-label="Principal"

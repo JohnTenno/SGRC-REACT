@@ -9,9 +9,24 @@ const heroImages = Object.keys(imageModules)
   .sort()
   .map((path) => imageModules[path])
 
-export function HeroHeader() {
-  const images = useMemo(() => heroImages, [])
+/**
+ * @param {object} [props]
+ * @param {string} [props.title]
+ * @param {string} [props.description]
+ * @param {string} [props.image] imagen fija de fondo (ej. cubículo seleccionado)
+ * @param {string} [props.imageAlt]
+ * @param {number} [props.capacity] capacidad máxima del espacio
+ */
+export function HeroHeader({
+  title = 'Bienvenido al sistema de reservas de la UACH',
+  description = 'Consulta la disponibilidad en tiempo real, reserva tu cubículo y solicita equipo de apoyo sin conflictos de horario.',
+  image,
+  imageAlt = '',
+  capacity,
+}) {
+  const images = useMemo(() => (image ? [image] : heroImages), [image])
   const [activeIndex, setActiveIndex] = useState(0)
+  const showIndicators = !image && images.length > 1
 
   useEffect(() => {
     if (images.length <= 1) return undefined
@@ -27,16 +42,14 @@ export function HeroHeader() {
     <header className="relative w-full overflow-hidden">
       <div className="relative min-h-[300px] sm:min-h-[400px] lg:min-h-[480px]">
         {images.length > 0 ? (
-          images.map((src, index) => (
-            <img
-              key={src}
-              src={src}
-              alt={`Campus UACH ${index + 1}`}
-              className={`absolute inset-0 size-full object-cover transition-opacity duration-700 ease-in-out ${
-                index === activeIndex ? 'opacity-100' : 'opacity-0'
-              }`}
-            />
-          ))
+          <img
+            key={images[activeIndex]}
+            src={images[activeIndex]}
+            alt={imageAlt || `Campus UACH ${activeIndex + 1}`}
+            className="absolute inset-0 size-full object-cover transition-opacity duration-700 ease-in-out"
+            decoding="async"
+            fetchPriority="high"
+          />
         ) : (
           <div className="absolute inset-0 bg-uach-purple-900" />
         )}
@@ -48,15 +61,22 @@ export function HeroHeader() {
 
         <div className="relative z-10 flex min-h-[300px] flex-col items-center justify-center px-6 py-12 text-center sm:min-h-[400px] sm:px-10 lg:min-h-[480px]">
           <h1 className="font-alverata max-w-4xl text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
-            Bienvenido al sistema de reservas de la UACH
+            {title}
           </h1>
           <p className="font-praxis mt-4 max-w-3xl text-base leading-relaxed text-white/90 sm:text-lg">
-            Consulta la disponibilidad en tiempo real, reserva tu cubículo y solicita
-            equipo de apoyo sin conflictos de horario.
+            {description}
           </p>
+          {capacity != null ? (
+            <p className="font-praxis mt-3 text-sm font-medium text-uach-gold-400 sm:text-base">
+              Capacidad máxima:{' '}
+              <span className="font-semibold text-white">
+                {capacity} {capacity === 1 ? 'persona' : 'personas'}
+              </span>
+            </p>
+          ) : null}
         </div>
 
-        {images.length > 1 ? (
+        {showIndicators ? (
           <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2">
             {images.map((src, index) => (
               <button
