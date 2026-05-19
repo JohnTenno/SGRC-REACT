@@ -26,15 +26,15 @@ export function LoginImageCarousel({ className = '' }) {
   if (images.length === 0) {
     return (
       <div
-        className={`flex items-center justify-center bg-uach-purple-900 ${className}`}
+        className={`flex items-center justify-center bg-white ${className}`}
       >
-        <p className="text-sm text-white/50">Sin imágenes en assets/images</p>
+        <p className="text-sm text-uach-purple-900/50">Sin imágenes en assets/images</p>
       </div>
     )
   }
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`relative overflow-hidden bg-white ${className}`}>
       {images.map((src, index) => (
         <img
           key={src}
@@ -46,8 +46,6 @@ export function LoginImageCarousel({ className = '' }) {
         />
       ))}
 
-      <div className="absolute inset-0 bg-linear-to-t from-uach-purple-950/70 via-uach-purple-900/20 to-uach-purple-950/40" />
-
       {images.length > 1 ? (
         <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2">
           {images.map((src, index) => (
@@ -58,8 +56,8 @@ export function LoginImageCarousel({ className = '' }) {
               onClick={() => setActiveIndex(index)}
               className={`size-2.5 rounded-full transition ${
                 index === activeIndex
-                  ? 'scale-110 bg-uach-gold-400'
-                  : 'bg-white/50 hover:bg-white/80'
+                  ? 'scale-110 bg-uach-gold-500'
+                  : 'bg-uach-purple-900/30 hover:bg-uach-purple-900/50'
               }`}
             />
           ))}

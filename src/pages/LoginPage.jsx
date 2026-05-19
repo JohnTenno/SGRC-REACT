@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { FailFeedback } from '@/components/feedback/FailFeedback'
 import { SuccessFeedback } from '@/components/feedback/SuccessFeedback'
 import { LoginImageCarousel } from '@/components/LoginImageCarousel'
+import { saveAuthSession } from '@/lib/authSession'
 import escudoUach from '@/assets/escudo-color.png'
 
-/*simulacion de login exitoso*/
+/*simulacion de login exitoso (asi lo hago yo okey? no se como trabajas tu JAJA) t amo jonh*/
 
 const labelClass =
   'font-alverata text-sm font-semibold uppercase tracking-[0.12em] text-white/95'
@@ -29,7 +30,7 @@ const MOCK_USERS_DB = {
   },
 }
 
-/** Cuerpo esperado por POST /api/v1/auth/login */
+/* POST /api/v1/auth/login */
 function buildLoginRequestBody(enrollment, password) {
   return {
     enrollment: enrollment.trim(),
@@ -121,7 +122,8 @@ export function LoginPage() {
     const requestBody = buildLoginRequestBody(enrollment, password)
 
     try {
-      await login(requestBody)
+      const data = await login(requestBody)
+      saveAuthSession({ token: data.token, user: data.user })
       setShowSuccess(true)
     } catch (error) {
       setFailMessage(

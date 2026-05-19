@@ -116,6 +116,11 @@
 }
 
 @layer components {
+  /** Ancho y padding horizontal (32px) compartido por navbar y contenido */
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-8;
+  }
+
   .button-primary {
     @apply font-praxis inline-flex items-center justify-center gap-2.5 rounded-md border border-uach-gold-600 bg-uach-gold-500 px-5 py-4 text-base font-semibold tracking-wide text-uach-purple-950 uppercase shadow-sm transition;
     @apply hover:bg-uach-gold-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;

@@ -13,12 +13,12 @@ export function FailFeedback({
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-uach-purple-950/80 p-4 backdrop-blur-sm animate-feedback-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-uach-purple-950/60 p-4 backdrop-blur-sm animate-feedback-fade-in"
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="fail-feedback-title"
     >
-      <div className="w-full max-w-sm animate-feedback-scale-in animate-feedback-shake rounded-3xl border border-red-400/30 bg-white/10 p-8 text-center shadow-2xl backdrop-blur-xl">
+      <div className="w-full max-w-sm animate-feedback-scale-in animate-feedback-shake rounded-3xl border border-red-200 bg-white p-8 text-center shadow-xl">
         <div className="mx-auto mb-5 flex size-20 items-center justify-center rounded-full bg-red-500/15">
           <svg
             className="size-16"
@@ -44,16 +44,19 @@ export function FailFeedback({
           </svg>
         </div>
 
-        <h2 id="fail-feedback-title" className="text-xl font-semibold text-white">
+        <h2
+          id="fail-feedback-title"
+          className="font-alverata text-xl font-semibold text-uach-purple-950"
+        >
           {title}
         </h2>
-        <p className="mt-2 text-sm text-red-100/90">{message}</p>
+        <p className="font-praxis mt-2 text-sm text-red-600">{message}</p>
 
         {onClose ? (
           <button
             type="button"
             onClick={onClose}
-            className="mt-6 rounded-xl border border-white/25 px-5 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+            className="font-praxis mt-6 rounded-xl border border-uach-purple-900/20 px-5 py-2 text-sm font-medium text-uach-purple-950 transition hover:bg-uach-purple-50"
           >
             Intentar de nuevo
           </button>

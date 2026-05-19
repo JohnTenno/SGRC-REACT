@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" fill="none" role="img" aria-label="Cubículos de estudio">
+  <rect width="400" height="240" fill="#2d1654"/>
+  <rect x="40" y="50" width="90" height="140" rx="6" fill="#3d1f6e" stroke="#f5c842" stroke-width="2"/>
+  <rect x="155" y="50" width="90" height="140" rx="6" fill="#4b2e83" stroke="#f5c842" stroke-width="2"/>
+  <rect x="270" y="50" width="90" height="140" rx="6" fill="#3d1f6e" stroke="#e8b41f" stroke-width="2"/>
+  <rect x="55" y="75" width="60" height="40" rx="3" fill="#1e0f3a" opacity="0.6"/>
+  <rect x="170" y="75" width="60" height="40" rx="3" fill="#1e0f3a" opacity="0.6"/>
+  <circle cx="315" cy="95" r="18" fill="#e8b41f" opacity="0.9"/>
+  <path d="M200 200h-20v-10h20v10z" fill="#f5c842"/>
+</svg>
