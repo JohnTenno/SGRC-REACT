@@ -20,7 +20,7 @@ const homeServices = [
       'Solicita laptops, proyectores y material de apoyo con seguimiento de entrega y devolución.',
     image: imgEquipo,
     imageAlt: 'Equipo y recursos tecnológicos universitarios',
-    href: '#',
+    href: '/renta-de-equipo',
   },
   {
     id: 'tutorias',

@@ -1,6 +1,6 @@
-import { CardHomeGrid } from '@/components/CardHome'
-import { HeroHeader } from '@/components/HeroHeader'
-import { Navbar } from '@/components/Navbar'
+import { CardHomeGrid } from '@/components/cards/CardHome'
+import { HeroHeader } from '@/components/layout/HeroHeader'
+import { Navbar } from '@/components/layout/Navbar'
 
 export function HomePage() {
   return (

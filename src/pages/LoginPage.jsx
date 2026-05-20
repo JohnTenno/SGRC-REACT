@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FailFeedback } from '@/components/feedback/FailFeedback'
-import { SuccessFeedback } from '@/components/feedback/SuccessFeedback'
-import { LoginImageCarousel } from '@/components/LoginImageCarousel'
+import { FailAnimation } from '@/components/animations/FailAnimation'
+import { SuccessAnimation } from '@/components/animations/SuccessAnimation'
+import { LoginImageCarousel } from '@/components/auth/LoginImageCarousel'
 import { saveAuthSession } from '@/lib/authSession'
 import escudoUach from '@/assets/escudo-color.png'
 
@@ -140,7 +140,7 @@ export function LoginPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-uach-purple-950">
       {showSuccess ? (
-        <SuccessFeedback
+        <SuccessAnimation
           title="¡Bienvenido!"
           message="Inicio de sesión exitoso"
           onComplete={() => navigate('/home', { replace: true })}
@@ -148,7 +148,7 @@ export function LoginPage() {
       ) : null}
 
       {failMessage ? (
-        <FailFeedback
+        <FailAnimation
           title="Error al iniciar sesión"
           message={failMessage}
           onClose={() => setFailMessage(null)}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" fill="none" role="img" aria-label="Equipo universitario">
+  <rect width="400" height="240" fill="#2d1654"/>
+  <rect x="80" y="60" width="240" height="130" rx="10" fill="#3d1f6e" stroke="#f5c842" stroke-width="2"/>
+  <rect x="110" y="85" width="180" height="80" rx="4" fill="#1e0f3a"/>
+  <rect x="175" y="150" width="50" height="8" rx="2" fill="#4b2e83"/>
+  <circle cx="130" cy="125" r="22" fill="#5c3d9e" stroke="#e8b41f" stroke-width="2"/>
+  <path d="M250 100h40v50h-40z" fill="#4b2e83" stroke="#f5c842" stroke-width="2"/>
+  <path d="M265 115h10v20h-10z" fill="#e8b41f"/>
+</svg>

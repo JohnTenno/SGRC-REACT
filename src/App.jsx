@@ -2,7 +2,9 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { HomePage } from '@/pages/HomePage'
 import { LoginPage } from '@/pages/LoginPage'
 import { MisReservasPages } from '@/pages/MisReservasPages'
-import { ReservaCubiculoFormPage } from '@/pages/ReservaCubiculoFormPage'
+import { RentaEquipoOrdenPage } from '@/pages/RentaEquipoOrdenPage'
+import { RentaEquipoPage } from '@/pages/RentaEquipoPage'
+import { ReservaCubiculoFormPage } from '@/forms/ReservaCubiculoFormPage'
 import { ReservaCubiculoPage } from '@/pages/ReservaCubiculoPage'
 
 function App() {
@@ -15,6 +17,8 @@ function App() {
         <Route path="/mis-reservas" element={<MisReservasPages />} />
         <Route path="/reserva-de-cubiculo" element={<ReservaCubiculoPage />} />
         <Route path="/reserva-de-cubiculo/:id" element={<ReservaCubiculoFormPage />} />
+        <Route path="/renta-de-equipo" element={<RentaEquipoPage />} />
+        <Route path="/renta-de-equipo/orden" element={<RentaEquipoOrdenPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

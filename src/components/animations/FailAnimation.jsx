@@ -1,24 +1,17 @@
-/**
- * Feedback animado de error (login fallido, tarea incompleta, etc.)
- *
- * @param {object} props
- * @param {string} [props.title]
- * @param {string} [props.message]
- * @param {() => void} [props.onClose]
- */
-export function FailFeedback({
+/** @param {object} props */
+export function FailAnimation({
   title = 'Algo salió mal',
   message = 'No se pudo completar la operación.',
   onClose,
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-uach-purple-950/60 p-4 backdrop-blur-sm animate-feedback-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-uach-purple-950/60 p-4 backdrop-blur-sm animate-animations-fade-in"
       role="alertdialog"
       aria-modal="true"
-      aria-labelledby="fail-feedback-title"
+      aria-labelledby="fail-animation-title"
     >
-      <div className="w-full max-w-sm animate-feedback-scale-in animate-feedback-shake rounded-3xl border border-red-200 bg-white p-8 text-center shadow-xl">
+      <div className="w-full max-w-sm animate-animations-scale-in animate-animations-shake rounded-3xl border border-red-200 bg-white p-8 text-center shadow-xl">
         <div className="mx-auto mb-5 flex size-20 items-center justify-center rounded-full bg-red-500/15">
           <svg
             className="size-16"
@@ -39,13 +32,13 @@ export function FailFeedback({
               stroke="currentColor"
               strokeWidth="3"
               strokeLinecap="round"
-              className="text-red-400 animate-feedback-x-draw"
+              className="text-red-400 animate-animations-x-draw"
             />
           </svg>
         </div>
 
         <h2
-          id="fail-feedback-title"
+          id="fail-animation-title"
           className="font-alverata text-xl font-semibold text-uach-purple-950"
         >
           {title}

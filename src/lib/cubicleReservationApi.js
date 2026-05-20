@@ -1,4 +1,16 @@
+import { addMockUserReservation, getMockUserReservations } from '@/data/mockUserReservations'
 import { getAuthSession } from '@/lib/authSession'
+
+/** Duración máxima permitida por reserva de cubículo */
+export const MAX_CUBICLE_RESERVATION_HOURS = 2
+
+/** Estados de reserva — la confirmación requiere aprobación del administrador */
+export const RESERVATION_STATUS = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  CANCELLED: 'CANCELLED',
+  COMPLETED: 'COMPLETED',
+}
 
 /** Opciones de hora para el formulario (valor UI en HH:MM) */
 export const RESERVATION_TIME_OPTIONS = [
@@ -20,6 +32,26 @@ export const RESERVATION_TIME_OPTIONS = [
  * @param {string} time HH:MM o HH:MM:SS
  * @returns {string} HH:MM:SS
  */
+/**
+ * Horas entre inicio y fin (slots de 1 h; fin exclusivo en el índice).
+ * @param {string} startTime HH:MM
+ * @param {string} endTime HH:MM
+ */
+export function getReservationDurationHours(startTime, endTime) {
+  const startIdx = RESERVATION_TIME_OPTIONS.indexOf(startTime)
+  const endIdx = RESERVATION_TIME_OPTIONS.indexOf(endTime)
+  if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) return 0
+  return endIdx - startIdx
+}
+
+export function isWithinMaxReservationDuration(
+  startTime,
+  endTime,
+  maxHours = MAX_CUBICLE_RESERVATION_HOURS,
+) {
+  return getReservationDurationHours(startTime, endTime) <= maxHours
+}
+
 export function formatTimeToBackend(time) {
   if (/^\d{2}:\d{2}:\d{2}$/.test(time)) return time
   if (/^\d{2}:\d{2}$/.test(time)) return `${time}:00`
@@ -40,6 +72,12 @@ export function buildCubicleReservationBody({
   startTime,
   endTime,
 }) {
+  if (!isWithinMaxReservationDuration(startTime, endTime)) {
+    throw new Error(
+      `La reserva no puede exceder ${MAX_CUBICLE_RESERVATION_HOURS} horas.`,
+    )
+  }
+
   return {
     cubicleId: Number(cubicleId),
     reservationDate,
@@ -48,19 +86,63 @@ export function buildCubicleReservationBody({
   }
 }
 
-function simulateCreateReservation() {
+function simulateCreateReservation(body) {
   return new Promise((resolve) => {
-    setTimeout(() => resolve({ status: 'APPROVED' }), 900)
+    setTimeout(() => {
+      const reservation = addMockUserReservation(body)
+      resolve(reservation)
+    }, 900)
+  })
+}
+
+function simulateFetchMyReservations() {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(getMockUserReservations()), 500)
   })
 }
 
 /**
+ * Lista las reservas del usuario autenticado (próximas e historial).
+ * @returns {Promise<import('@/data/mockUserReservations').CubicleReservation[]>}
+ */
+export async function fetchMyCubicleReservations() {
+  if (import.meta.env.VITE_USE_MOCK_RESERVATIONS !== 'false') {
+    return simulateFetchMyReservations()
+  }
+
+  const session = getAuthSession()
+  if (!session?.token) {
+    throw { status: 401, message: 'Debes iniciar sesión para ver tus reservas.' }
+  }
+
+  const response = await fetch('/api/v1/cubicle-reservations', {
+    headers: {
+      Authorization: `Bearer ${session.token}`,
+    },
+  })
+
+  const contentType = response.headers.get('content-type') ?? ''
+  const data =
+    contentType.includes('application/json') ? await response.json() : null
+
+  if (!response.ok) {
+    throw {
+      status: response.status,
+      message: data?.message ?? 'No se pudieron cargar tus reservas.',
+    }
+  }
+
+  return Array.isArray(data) ? data : (data?.items ?? data?.reservations ?? [])
+}
+
+/**
  * POST reserva de cubículo — el usuario va en el JWT, no en el body.
+ * El backend debe crear la reserva en estado PENDING hasta que un admin la apruebe.
  * @param {ReturnType<typeof buildCubicleReservationBody>} body
  */
 export async function createCubicleReservation(body) {
   if (import.meta.env.VITE_USE_MOCK_RESERVATIONS !== 'false') {
-    return simulateCreateReservation()
+    return simulateCreateReservation(body)
   }
 
   const session = getAuthSession()

@@ -1,16 +1,7 @@
 import { useEffect } from 'react'
 
-/**
- * Feedback animado de éxito (login, guardado, etc.)
- *
- * @param {object} props
- * @param {string} [props.title]
- * @param {string} [props.message]
- * @param {number} [props.duration] ms antes de llamar onComplete
- * @param {() => void} [props.onComplete]
- * @param {() => void} [props.onClose] si el usuario cierra manualmente
- */
-export function SuccessFeedback({
+/** @param {object} props */
+export function SuccessAnimation({
   title = '¡Éxito!',
   message = 'La operación se completó correctamente.',
   duration = 1600,
@@ -27,12 +18,12 @@ export function SuccessFeedback({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-uach-purple-950/60 p-4 backdrop-blur-sm animate-feedback-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-uach-purple-950/60 p-4 backdrop-blur-sm animate-animations-fade-in"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="success-feedback-title"
+      aria-labelledby="success-animation-title"
     >
-      <div className="w-full max-w-sm animate-feedback-scale-in rounded-3xl border border-uach-gold-200 bg-white p-8 text-center shadow-xl">
+      <div className="w-full max-w-sm animate-animations-scale-in rounded-3xl border border-uach-gold-200 bg-white p-8 text-center shadow-xl">
         <div className="mx-auto mb-5 flex size-20 items-center justify-center rounded-full bg-uach-gold-400/15">
           <svg
             className="size-16"
@@ -46,7 +37,7 @@ export function SuccessFeedback({
               r="24"
               stroke="currentColor"
               strokeWidth="3"
-              className="text-uach-gold-400 animate-feedback-circle-draw"
+              className="text-uach-gold-400 animate-animations-circle-draw"
             />
             <path
               d="M14 27l8 8 16-18"
@@ -54,18 +45,20 @@ export function SuccessFeedback({
               strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-uach-gold-400 animate-feedback-check-draw"
+              className="text-uach-gold-400 animate-animations-check-draw"
             />
           </svg>
         </div>
 
         <h2
-          id="success-feedback-title"
+          id="success-animation-title"
           className="font-alverata text-xl font-semibold text-uach-purple-950"
         >
           {title}
         </h2>
-        <p className="font-praxis mt-2 text-sm text-uach-purple-900/70">{message}</p>
+        <p className="font-praxis mt-2 text-sm leading-relaxed text-uach-purple-900/70">
+          {message}
+        </p>
 
         {onClose ? (
           <button

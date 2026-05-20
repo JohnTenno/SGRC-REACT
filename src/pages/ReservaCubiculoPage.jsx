@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { CubiculoCard } from '@/components/CubiculoCard'
-import { HeroHeader } from '@/components/HeroHeader'
-import { Navbar } from '@/components/Navbar'
+import { CubiculoCard } from '@/components/cards/CubiculoCard'
+import { HeroHeader } from '@/components/layout/HeroHeader'
+import { Navbar } from '@/components/layout/Navbar'
 import { MOCK_CUBICLES } from '@/data/mockCubiculos'
 
 export function ReservaCubiculoPage() {

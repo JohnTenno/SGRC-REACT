@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
-import { CubiculoHorariosPanel } from '@/components/CubiculoHorariosPanel'
-import { FailFeedback } from '@/components/feedback/FailFeedback'
-import { SuccessFeedback } from '@/components/feedback/SuccessFeedback'
-import { HeroHeader } from '@/components/HeroHeader'
-import { Navbar } from '@/components/Navbar'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { FailAnimation } from '@/components/animations/FailAnimation'
+import { SuccessAnimation } from '@/components/animations/SuccessAnimation'
+import { HeroHeader } from '@/components/layout/HeroHeader'
+import { Navbar } from '@/components/layout/Navbar'
+import { CubiculoHorariosPanel } from '@/components/reservation/CubiculoHorariosPanel'
 import { ReservationDatePicker } from '@/components/reservation/ReservationDatePicker'
 import { ReservationTimePicker } from '@/components/reservation/ReservationTimePicker'
 import { getCubiculoById } from '@/data/mockCubiculos'
@@ -13,9 +13,11 @@ import {
   isReservationRangeAvailable,
 } from '@/data/mockCubiculoAvailability'
 import {
+  MAX_CUBICLE_RESERVATION_HOURS,
   RESERVATION_TIME_OPTIONS,
   buildCubicleReservationBody,
   createCubicleReservation,
+  isWithinMaxReservationDuration,
 } from '@/lib/cubicleReservationApi'
 
 const labelClass =
@@ -74,6 +76,14 @@ function validateForm({
   if (
     startTime &&
     endTime &&
+    !isWithinMaxReservationDuration(startTime, endTime)
+  ) {
+    errors.endTime = `La reserva no puede exceder ${MAX_CUBICLE_RESERVATION_HOURS} horas.`
+  }
+
+  if (
+    startTime &&
+    endTime &&
     !isReservationRangeAvailable(cubicleId, reservationDate, startTime, endTime)
   ) {
     errors.endTime = 'Ese horario incluye bloques ocupados. Elige otro rango.'
@@ -90,6 +100,7 @@ function isFormReady({ cubicleId, reservationDate, startTime, endTime, minDate, 
 
 export function ReservaCubiculoFormPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const cubicle = getCubiculoById(id)
 
   const minDate = todayIso()
@@ -122,6 +133,7 @@ export function ReservaCubiculoFormPage() {
     const startIdx = RESERVATION_TIME_OPTIONS.indexOf(startTime)
     return RESERVATION_TIME_OPTIONS.filter((slot, slotIdx) => {
       if (slotIdx <= startIdx) return false
+      if (slotIdx - startIdx > MAX_CUBICLE_RESERVATION_HOURS) return false
       const range = RESERVATION_TIME_OPTIONS.slice(startIdx, slotIdx)
       return range.every((hour) => !occupiedSlots.has(hour))
     })
@@ -171,8 +183,11 @@ export function ReservaCubiculoFormPage() {
     } else if (endTime) {
       const endIdx = RESERVATION_TIME_OPTIONS.indexOf(endTime)
       const range = RESERVATION_TIME_OPTIONS.slice(startIdx, endIdx)
+      const durationHours = endIdx - startIdx
       const endStillValid =
-        endIdx > startIdx && range.every((hour) => !occupiedSlots.has(hour))
+        endIdx > startIdx &&
+        durationHours <= MAX_CUBICLE_RESERVATION_HOURS &&
+        range.every((hour) => !occupiedSlots.has(hour))
       if (!endStillValid) setEndTime('')
     }
 
@@ -200,20 +215,21 @@ export function ReservaCubiculoFormPage() {
     setFailMessage(null)
     setIsSubmitting(true)
 
-    const body = buildCubicleReservationBody({
-      cubicleId,
-      reservationDate,
-      startTime,
-      endTime,
-    })
-
     try {
+      const body = buildCubicleReservationBody({
+        cubicleId,
+        reservationDate,
+        startTime,
+        endTime,
+      })
       await createCubicleReservation(body)
       setShowSuccess(true)
     } catch (error) {
-      setFailMessage(
-        error?.message ?? 'No se pudo completar la reserva. Intenta de nuevo.',
-      )
+      const message =
+        error instanceof Error
+          ? error.message
+          : error?.message ?? 'No se pudo completar la reserva. Intenta de nuevo.'
+      setFailMessage(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -224,19 +240,19 @@ export function ReservaCubiculoFormPage() {
       <Navbar />
 
       {showSuccess ? (
-        <SuccessFeedback
-          title="Reserva enviada"
-          message="Tu solicitud fue registrada. Revisa el estado en Mis reservas."
+        <SuccessAnimation
+          title="Solicitud enviada"
+          message="Tu reserva quedó registrada y está pendiente de aprobación. Un administrador debe aceptarla antes de que puedas usar el cubículo. Cuando sea aprobada, haz check-in en el lobby de la biblioteca; de lo contrario podrás ser sancionado."
+          duration={4500}
           onComplete={() => {
             setShowSuccess(false)
-            setStartTime('')
-            setEndTime('')
+            navigate('/mis-reservas')
           }}
         />
       ) : null}
 
       {failMessage ? (
-        <FailFeedback
+        <FailAnimation
           title="No se pudo reservar"
           message={failMessage}
           onClose={() => setFailMessage(null)}
@@ -296,7 +312,8 @@ export function ReservaCubiculoFormPage() {
                   Datos de la reserva
                 </h2>
                 <p className="font-praxis mt-1 text-sm text-uach-purple-900/65">
-                  Elige fecha y horario. Los bloques ocupados no se pueden seleccionar.
+                  Elige fecha y horario (máximo {MAX_CUBICLE_RESERVATION_HOURS} horas por
+                  reserva). Los bloques ocupados no se pueden seleccionar.
                 </p>
 
                 <div className="mt-6 flex flex-col gap-8">
