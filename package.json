@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mobile": "vite --host",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -12,13 +13,17 @@
   "dependencies": {
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
+    "html5-qrcode": "^2.3.8",
     "jspdf": "^4.2.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-qr-code": "^2.0.21",
     "react-router-dom": "^7.15.1"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["core-js"]
+    "onlyBuiltDependencies": [
+      "core-js"
+    ]
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

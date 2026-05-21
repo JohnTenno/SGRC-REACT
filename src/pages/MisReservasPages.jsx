@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Navbar } from '@/components/layout/Navbar'
 import { MisReservaCard } from '@/components/reservation/MisReservaCard'
 import { fetchMyCubicleReservations } from '@/lib/cubicleReservationApi'
 import { splitReservationsByTimeline } from '@/lib/reservationTimeline'
 
-function ReservationsSection({ title, description, reservations, variant, emptyMessage }) {
+function ReservationsSection({ title, description, reservations, variant, emptyMessage, onUpdated }) {
   return (
     <section className="flex flex-col gap-4">
       <div>
@@ -21,7 +21,11 @@ function ReservationsSection({ title, description, reservations, variant, emptyM
         <ul className="flex flex-col gap-4">
           {reservations.map((reservation) => (
             <li key={reservation.id}>
-              <MisReservaCard reservation={reservation} variant={variant} />
+              <MisReservaCard
+                reservation={reservation}
+                variant={variant}
+                onUpdated={onUpdated}
+              />
             </li>
           ))}
         </ul>
@@ -35,40 +39,33 @@ export function MisReservasPages() {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState(null)
 
-  useEffect(() => {
-    let cancelled = false
+  const loadReservations = useCallback(async () => {
+    setIsLoading(true)
+    setErrorMessage(null)
 
-    async function loadReservations() {
-      setIsLoading(true)
-      setErrorMessage(null)
-
-      try {
-        const data = await fetchMyCubicleReservations()
-        if (!cancelled) setReservations(data)
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(
-            error?.message ?? 'No se pudieron cargar tus reservas. Intenta de nuevo.',
-          )
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
-
-    loadReservations()
-
-    return () => {
-      cancelled = true
+    try {
+      const data = await fetchMyCubicleReservations()
+      setReservations(data)
+    } catch (error) {
+      setErrorMessage(
+        error?.message ?? 'No se pudieron cargar tus reservas. Intenta de nuevo.',
+      )
+    } finally {
+      setIsLoading(false)
     }
   }, [])
 
-  const { upcoming, past } = useMemo(
+  useEffect(() => {
+    loadReservations()
+  }, [loadReservations])
+
+  const { active, past } = useMemo(
     () => splitReservationsByTimeline(reservations),
     [reservations],
   )
 
-  const hasNoReservations = !isLoading && !errorMessage && upcoming.length === 0 && past.length === 0
+  const hasNoReservations =
+    !isLoading && !errorMessage && active.length === 0 && past.length === 0
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -81,9 +78,9 @@ export function MisReservasPages() {
               Mis reservas
             </h1>
             <p className="font-praxis mt-2 max-w-2xl text-uach-purple-900/70">
-              Consulta tus solicitudes pendientes, reservas aprobadas y el historial de
-              cubículos. Un administrador debe aprobar cada reserva antes de usar el
-              cubículo.
+              Tus reservas tienen tres estados: para hacer check-in, en uso o cancelado. El
+              check-in se hace escaneando el QR en la entrada del cubículo cuando quieras, antes de
+              que termine tu horario. Para cancelar necesitas al menos 1 hora de anticipación.
             </p>
           </div>
           <Link
@@ -117,7 +114,8 @@ export function MisReservasPages() {
               Aún no tienes reservas
             </p>
             <p className="font-praxis max-w-md text-sm text-uach-purple-900/65">
-              Cuando reserves un cubículo, aparecerá aquí tu historial y tus próximas visitas.
+              Cuando reserves un cubículo, aparecerá aquí para que hagas check-in o consultes su
+              estado.
             </p>
             <Link to="/reserva-de-cubiculo" className="button-primary mt-2">
               Reservar cubículo
@@ -128,19 +126,21 @@ export function MisReservasPages() {
         {!isLoading && !errorMessage && !hasNoReservations ? (
           <div className="flex flex-col gap-10">
             <ReservationsSection
-              title="Próximas reservas"
-              description="Incluye solicitudes en espera de aprobación y reservas ya aprobadas por un administrador."
-              reservations={upcoming}
-              variant="upcoming"
-              emptyMessage="No tienes reservas próximas."
+              title="Reservas activas"
+              description="Para hacer check-in o en uso."
+              reservations={active}
+              variant="active"
+              emptyMessage="No tienes reservas activas."
+              onUpdated={loadReservations}
             />
 
             <ReservationsSection
               title="Historial"
-              description="Reservas que ya pasaron o fueron canceladas."
+              description="Canceladas, sancionadas o ya finalizadas."
               reservations={past}
               variant="past"
-              emptyMessage="Tu historial aparecerá aquí cuando completes una reserva."
+              emptyMessage="Tu historial aparecerá aquí."
+              onUpdated={loadReservations}
             />
           </div>
         ) : null}

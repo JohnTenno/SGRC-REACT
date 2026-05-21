@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { EquipmentCatalogToolbar } from '@/components/equipment/EquipmentCatalogToolbar'
 import { EquipoSelectionSummary } from '@/components/equipment/EquipoSelectionSummary'
 import { EquipoCard } from '@/components/cards/EquipoCard'
 import { FailAnimation } from '@/components/animations/FailAnimation'
@@ -8,6 +9,10 @@ import { HeroHeader } from '@/components/layout/HeroHeader'
 import { Navbar } from '@/components/layout/Navbar'
 import { MOCK_EQUIOMENT, getEquiomentById } from '@/data/mockEquioment'
 import { createEquipmentRentalRequest } from '@/lib/equipmentRentalApi'
+import {
+  filterEquipmentCatalog,
+  hasActiveEquipmentFilters,
+} from '@/lib/filterEquipmentCatalog'
 
 /** @returns {Record<number, number>} */
 function clampQuantityForItem(item, quantity) {
@@ -23,6 +28,25 @@ export function RentaEquipoPage() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [failMessage, setFailMessage] = useState(null)
   const [pendingOrder, setPendingOrder] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [stockFilter, setStockFilter] = useState('all')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+
+  const filteredEquipment = useMemo(
+    () =>
+      filterEquipmentCatalog({
+        searchQuery,
+        stockFilter,
+        categoryFilter,
+      }),
+    [searchQuery, stockFilter, categoryFilter],
+  )
+
+  const hasActiveFilters = hasActiveEquipmentFilters({
+    searchQuery,
+    stockFilter,
+    categoryFilter,
+  })
 
   const selectedEquipment = useMemo(
     () =>
@@ -167,20 +191,50 @@ export function RentaEquipoPage() {
                 <p className="font-praxis mt-3 text-sm text-red-600">{fieldErrors.equipment}</p>
               ) : null}
 
-              <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {MOCK_EQUIOMENT.map((item) => (
-                  <li key={item.id} className="flex">
-                    <EquipoCard
-                      type={item.type}
-                      availableStock={item.availableStock}
-                      image={item.image}
-                      imageAlt={item.imageAlt}
-                      selected={Boolean(quantitiesById[item.id])}
-                      onSelect={() => toggleSelection(item.id)}
-                    />
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-6">
+                <EquipmentCatalogToolbar
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  stockFilter={stockFilter}
+                  onStockFilterChange={setStockFilter}
+                  categoryFilter={categoryFilter}
+                  onCategoryFilterChange={setCategoryFilter}
+                  resultCount={filteredEquipment.length}
+                  totalCount={MOCK_EQUIOMENT.length}
+                  hasActiveFilters={hasActiveFilters}
+                  onClearFilters={() => {
+                    setSearchQuery('')
+                    setStockFilter('all')
+                    setCategoryFilter('all')
+                  }}
+                />
+              </div>
+
+              {filteredEquipment.length === 0 ? (
+                <div className="font-praxis mt-8 rounded-xl border border-dashed border-uach-purple-900/20 bg-uach-purple-50/30 px-6 py-10 text-center text-sm text-uach-purple-900/70">
+                  <p className="font-medium text-uach-purple-900">
+                    No hay equipos con esos criterios
+                  </p>
+                  <p className="mt-2">
+                    Prueba otro término de búsqueda o cambia los filtros.
+                  </p>
+                </div>
+              ) : (
+                <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredEquipment.map((item) => (
+                    <li key={item.id} className="flex">
+                      <EquipoCard
+                        type={item.type}
+                        availableStock={item.availableStock}
+                        image={item.image}
+                        imageAlt={item.imageAlt}
+                        selected={Boolean(quantitiesById[item.id])}
+                        onSelect={() => toggleSelection(item.id)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <Link

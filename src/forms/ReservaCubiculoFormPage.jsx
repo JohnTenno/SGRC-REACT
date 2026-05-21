@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { FailAnimation } from '@/components/animations/FailAnimation'
 import { SuccessAnimation } from '@/components/animations/SuccessAnimation'
 import { HeroHeader } from '@/components/layout/HeroHeader'
 import { Navbar } from '@/components/layout/Navbar'
-import { CubiculoHorariosPanel } from '@/components/reservation/CubiculoHorariosPanel'
-import { ReservationDatePicker } from '@/components/reservation/ReservationDatePicker'
+import { ReservationCalendar } from '@/components/reservation/ReservationCalendar'
 import { ReservationTimePicker } from '@/components/reservation/ReservationTimePicker'
 import { getCubiculoById } from '@/data/mockCubiculos'
 import {
@@ -98,20 +97,31 @@ function isFormReady({ cubicleId, reservationDate, startTime, endTime, minDate, 
   ).length === 0
 }
 
+function resolveInitialDate(stateDate, minDate, maxDate) {
+  if (typeof stateDate === 'string' && stateDate >= minDate && stateDate <= maxDate) {
+    return stateDate
+  }
+  return minDate
+}
+
 export function ReservaCubiculoFormPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const cubicle = getCubiculoById(id)
 
   const minDate = todayIso()
   const maxDate = addDays(minDate, 14)
 
-  const [reservationDate, setReservationDate] = useState(minDate)
+  const [reservationDate, setReservationDate] = useState(() =>
+    resolveInitialDate(location.state?.reservationDate, minDate, maxDate),
+  )
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [createdReservationId, setCreatedReservationId] = useState(null)
   const [failMessage, setFailMessage] = useState(null)
 
   const cubicleId = cubicle?.id ?? 0
@@ -222,7 +232,8 @@ export function ReservaCubiculoFormPage() {
         startTime,
         endTime,
       })
-      await createCubicleReservation(body)
+      const created = await createCubicleReservation(body)
+      setCreatedReservationId(created.id)
       setShowSuccess(true)
     } catch (error) {
       const message =
@@ -241,11 +252,16 @@ export function ReservaCubiculoFormPage() {
 
       {showSuccess ? (
         <SuccessAnimation
-          title="Solicitud enviada"
-          message="Tu reserva quedó registrada y está pendiente de aprobación. Un administrador debe aceptarla antes de que puedas usar el cubículo. Cuando sea aprobada, haz check-in en el lobby de la biblioteca; de lo contrario podrás ser sancionado."
-          duration={4500}
+          title="¡Gracias por su reserva!"
+          message={
+            createdReservationId
+              ? `Reserva guardada (ID ${createdReservationId}). No olvide hacer check-in escaneando el QR en la entrada del cubículo antes de que termine su horario.`
+              : 'No olvide hacer check-in escaneando el QR en la entrada del cubículo antes de que termine su horario reservado.'
+          }
+          duration={6000}
           onComplete={() => {
             setShowSuccess(false)
+            setCreatedReservationId(null)
             navigate('/mis-reservas')
           }}
         />
@@ -289,25 +305,16 @@ export function ReservaCubiculoFormPage() {
             <span className="text-uach-purple-900">{cubicle.name}</span>
           </nav>
 
-          <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
-            <aside className="order-2 lg:order-1 lg:sticky lg:top-24">
-              <CubiculoHorariosPanel
-                cubicleId={cubicleId}
-                reservationDate={reservationDate}
-                startTime={startTime}
-                endTime={endTime}
-              />
-            </aside>
-
+          <div className="mx-auto w-full max-w-6xl">
             <form
               id="reserva-cubiculo-form"
               onSubmit={handleSubmit}
               noValidate
-              className="order-1 flex flex-col gap-6 lg:order-2"
+              className="flex flex-col gap-6"
             >
               <input type="hidden" name="cubicleId" value={cubicleId} readOnly />
 
-              <section className="rounded-xl border border-uach-purple-900/15 bg-uach-purple-50/30 p-6 shadow-sm">
+              <section className="rounded-xl border border-uach-purple-900/15 bg-uach-purple-50/30 p-6 shadow-sm sm:p-8">
                 <h2 className="font-alverata text-lg font-semibold text-uach-purple-900">
                   Datos de la reserva
                 </h2>
@@ -316,10 +323,10 @@ export function ReservaCubiculoFormPage() {
                   reserva). Los bloques ocupados no se pueden seleccionar.
                 </p>
 
-                <div className="mt-6 flex flex-col gap-8">
+                <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
                   <div className="flex flex-col gap-3">
                     <p className={labelClass}>Fecha de la reserva</p>
-                    <ReservationDatePicker
+                    <ReservationCalendar
                       value={reservationDate}
                       minDate={minDate}
                       maxDate={maxDate}
@@ -333,38 +340,42 @@ export function ReservaCubiculoFormPage() {
                     ) : null}
                   </div>
 
-                  <ReservationTimePicker
-                    label="Hora de inicio"
-                    value={startTime}
-                    options={availableStartOptions}
-                    onChange={handleStartTimeChange}
-                    disabled={isSubmitting}
-                    emptyHint="No hay horarios de inicio libres este día."
-                  />
-                  {fieldErrors.startTime ? (
-                    <p className="font-praxis -mt-4 text-sm text-red-600">
-                      {fieldErrors.startTime}
-                    </p>
-                  ) : null}
+                  <div className="flex flex-col gap-8">
+                    <ReservationTimePicker
+                      label="Hora de inicio"
+                      value={startTime}
+                      options={availableStartOptions}
+                      onChange={handleStartTimeChange}
+                      disabled={isSubmitting}
+                      emptyHint="No hay horarios de inicio libres este día."
+                    />
+                    {fieldErrors.startTime ? (
+                      <p className="font-praxis -mt-6 text-sm text-red-600">
+                        {fieldErrors.startTime}
+                      </p>
+                    ) : null}
 
-                  <ReservationTimePicker
-                    label="Hora de fin"
-                    value={endTime}
-                    options={availableEndOptions}
-                    onChange={(value) => {
-                      setEndTime(value)
-                      setFieldErrors((prev) => ({ ...prev, endTime: undefined }))
-                    }}
-                    disabled={isSubmitting || !startTime}
-                    emptyHint={
-                      startTime
-                        ? 'No hay horarios de fin disponibles para ese inicio.'
-                        : 'Selecciona primero la hora de inicio.'
-                    }
-                  />
-                  {fieldErrors.endTime ? (
-                    <p className="font-praxis -mt-4 text-sm text-red-600">{fieldErrors.endTime}</p>
-                  ) : null}
+                    <ReservationTimePicker
+                      label="Hora de fin"
+                      value={endTime}
+                      options={availableEndOptions}
+                      onChange={(value) => {
+                        setEndTime(value)
+                        setFieldErrors((prev) => ({ ...prev, endTime: undefined }))
+                      }}
+                      disabled={isSubmitting || !startTime}
+                      emptyHint={
+                        startTime
+                          ? 'No hay horarios de fin disponibles para ese inicio.'
+                          : 'Selecciona primero la hora de inicio.'
+                      }
+                    />
+                    {fieldErrors.endTime ? (
+                      <p className="font-praxis -mt-6 text-sm text-red-600">
+                        {fieldErrors.endTime}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </section>
 

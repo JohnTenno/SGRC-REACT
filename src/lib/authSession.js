@@ -9,7 +9,6 @@ const AUTH_STORAGE_KEY = 'sgrc.auth'
  * @property {string} role
  * @property {boolean} isTutor
  * @property {number} facultyId
- * @property {string} [photoUrl]
  */
 
 /**

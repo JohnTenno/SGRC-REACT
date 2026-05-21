@@ -1,15 +1,19 @@
-import { addMockUserReservation, getMockUserReservations } from '@/data/mockUserReservations'
+import {
+  addMockUserReservation,
+  getMockUserReservations,
+  performMockCubicleCancel,
+  performMockCubicleCheckIn,
+} from '@/data/mockUserReservations'
+import { canCancelReservation, canPerformCheckIn } from '@/lib/reservationTimeline'
 import { getAuthSession } from '@/lib/authSession'
 
 /** Duración máxima permitida por reserva de cubículo */
 export const MAX_CUBICLE_RESERVATION_HOURS = 2
 
-/** Estados de reserva — la confirmación requiere aprobación del administrador */
+/** Estados de reserva en el sistema */
 export const RESERVATION_STATUS = {
-  PENDING: 'PENDING',
   APPROVED: 'APPROVED',
   CANCELLED: 'CANCELLED',
-  COMPLETED: 'COMPLETED',
 }
 
 /** Opciones de hora para el formulario (valor UI en HH:MM) */
@@ -137,7 +141,6 @@ export async function fetchMyCubicleReservations() {
 
 /**
  * POST reserva de cubículo — el usuario va en el JWT, no en el body.
- * El backend debe crear la reserva en estado PENDING hasta que un admin la apruebe.
  * @param {ReturnType<typeof buildCubicleReservationBody>} body
  */
 export async function createCubicleReservation(body) {
@@ -167,6 +170,139 @@ export async function createCubicleReservation(body) {
     throw {
       status: response.status,
       message: data?.message ?? 'No se pudo completar la reserva.',
+    }
+  }
+
+  return data
+}
+
+function simulatePerformCheckIn(reservationId) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        const list = getMockUserReservations()
+        const reservation = list.find((item) => item.id === reservationId)
+        if (!reservation) {
+          reject(new Error('Reserva no encontrada.'))
+          return
+        }
+        if (!canPerformCheckIn(reservation)) {
+          reject(
+            new Error(
+              'Ya no puedes hacer check-in en esta reserva (horario finalizado o reserva cancelada).',
+            ),
+          )
+          return
+        }
+
+        resolve(performMockCubicleCheckIn(reservationId))
+      } catch (error) {
+        reject(error)
+      }
+    }, 600)
+  })
+}
+
+/**
+ * Registra el check-in (el QR se validará en backend cuando exista).
+ * @param {number} reservationId
+ * @param {string} [_scannedPayload] contenido del QR escaneado
+ * @returns {Promise<import('@/data/mockUserReservations').CubicleReservation>}
+ */
+export async function performCubicleCheckIn(reservationId, _scannedPayload) {
+  if (import.meta.env.VITE_USE_MOCK_RESERVATIONS !== 'false') {
+    return simulatePerformCheckIn(reservationId)
+  }
+
+  const session = getAuthSession()
+  if (!session?.token) {
+    throw { status: 401, message: 'Debes iniciar sesión para hacer check-in.' }
+  }
+
+  const response = await fetch(
+    `/api/v1/cubicle-reservations/${reservationId}/check-in`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.token}`,
+      },
+      body: JSON.stringify({ qrPayload: _scannedPayload }),
+    },
+  )
+
+  const contentType = response.headers.get('content-type') ?? ''
+  const data =
+    contentType.includes('application/json') ? await response.json() : null
+
+  if (!response.ok) {
+    throw {
+      status: response.status,
+      message: data?.message ?? 'No se pudo registrar el check-in.',
+    }
+  }
+
+  return data
+}
+
+function simulateCancelReservation(reservationId) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        const list = getMockUserReservations()
+        const reservation = list.find((item) => item.id === reservationId)
+        if (!reservation) {
+          reject(new Error('Reserva no encontrada.'))
+          return
+        }
+        if (!canCancelReservation(reservation)) {
+          reject(
+            new Error(
+              'Solo puedes cancelar con al menos 1 hora de anticipación. Si no haces check-in a tiempo, se aplicará una sanción.',
+            ),
+          )
+          return
+        }
+        resolve(performMockCubicleCancel(reservationId))
+      } catch (error) {
+        reject(error)
+      }
+    }, 600)
+  })
+}
+
+/**
+ * Cancela una reserva (mínimo 1 hora antes del inicio).
+ * @param {number} reservationId
+ * @returns {Promise<import('@/data/mockUserReservations').CubicleReservation>}
+ */
+export async function cancelCubicleReservation(reservationId) {
+  if (import.meta.env.VITE_USE_MOCK_RESERVATIONS !== 'false') {
+    return simulateCancelReservation(reservationId)
+  }
+
+  const session = getAuthSession()
+  if (!session?.token) {
+    throw { status: 401, message: 'Debes iniciar sesión para cancelar.' }
+  }
+
+  const response = await fetch(`/api/v1/cubicle-reservations/${reservationId}/cancel`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${session.token}`,
+    },
+  })
+
+  const contentType = response.headers.get('content-type') ?? ''
+  const data =
+    contentType.includes('application/json') ? await response.json() : null
+
+  if (!response.ok) {
+    throw {
+      status: response.status,
+      message:
+        data?.message ??
+        'No se pudo cancelar la reserva. Debes cancelar con al menos 1 hora de anticipación.',
     }
   }
 

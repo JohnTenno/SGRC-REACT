@@ -1,35 +1,89 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getCubiculoById } from '@/data/mockCubiculos'
 import { CheckInWindowCountdown } from '@/components/reservation/CheckInWindowCountdown'
 import { ReservationCountdown } from '@/components/reservation/ReservationCountdown'
+import { cancelCubicleReservation } from '@/lib/cubicleReservationApi'
 import {
+  CANCELLATION_MIN_HOURS,
+  canCancelReservation,
   formatCheckTimestamp,
   formatReservationDateLabel,
   formatTimeForDisplay,
-  getReservationStatusLabel,
+  getCancellationDeadline,
+  getReservationDisplayLabel,
+  getReservationDisplayState,
   getUsageEndDeadline,
   hasCheckedIn,
-  hasCheckedOut,
-  isReservationApproved,
+  isCheckInWindowUpcoming,
   isReservationInUse,
-  isReservationPendingApproval,
+  isReservationMissedCheckIn,
+  isReservationSanctioned,
 } from '@/lib/reservationTimeline'
+
+const BADGE_STYLES = {
+  CANCELLED: 'bg-red-50 text-red-700',
+  CHECK_IN: 'bg-amber-50 text-amber-900',
+  IN_USE: 'bg-uach-gold-400/25 text-uach-purple-900',
+}
 
 /**
  * @param {object} props
  * @param {import('@/data/mockUserReservations').CubicleReservation} props.reservation
- * @param {'upcoming' | 'past'} props.variant
+ * @param {'active' | 'past'} props.variant
+ * @param {() => void} [props.onUpdated]
  */
-export function MisReservaCard({ reservation, variant }) {
+export function MisReservaCard({ reservation, variant, onUpdated }) {
+  const navigate = useNavigate()
   const cubicle = getCubiculoById(reservation.cubicleId)
   const isPast = variant === 'past'
-  const statusLabel = getReservationStatusLabel(reservation.status)
+  const displayState = getReservationDisplayState(reservation)
+  const displayLabel = getReservationDisplayLabel(displayState)
+  const isFinished =
+    isPast && hasCheckedIn(reservation) && !isReservationMissedCheckIn(reservation)
   const inUse = isReservationInUse(reservation)
   const usageEndDeadline = getUsageEndDeadline(reservation)
-  const showCheckInWindow =
+  const showCheckIn =
+    !isPast && displayState === 'CHECK_IN' && !isReservationMissedCheckIn(reservation)
+  const canCancel = !isPast && displayState === 'CHECK_IN' && canCancelReservation(reservation)
+  const cancelDeadline = getCancellationDeadline(reservation)
+  const showCancellationNotice =
     !isPast &&
-    !hasCheckedIn(reservation) &&
-    (isReservationPendingApproval(reservation.status) ||
-      isReservationApproved(reservation.status))
+    displayState === 'CHECK_IN' &&
+    !canCancel &&
+    isCheckInWindowUpcoming(reservation)
+  const [isCancelling, setIsCancelling] = useState(false)
+  const [cancelError, setCancelError] = useState(null)
+
+  async function handleCancel() {
+    if (
+      !window.confirm(
+        '¿Confirmas que deseas cancelar esta reserva? Solo puedes cancelar con al menos 1 hora de anticipación.',
+      )
+    ) {
+      return
+    }
+
+    setCancelError(null)
+    setIsCancelling(true)
+
+    try {
+      await cancelCubicleReservation(reservation.id)
+      onUpdated?.()
+    } catch (error) {
+      setCancelError(
+        error instanceof Error
+          ? error.message
+          : error?.message ?? 'No se pudo cancelar la reserva.',
+      )
+    } finally {
+      setIsCancelling(false)
+    }
+  }
+
+  function handleOpenCheckIn() {
+    navigate(`/check-in/${reservation.id}`)
+  }
 
   return (
     <article
@@ -38,7 +92,9 @@ export function MisReservaCard({ reservation, variant }) {
           ? 'border-uach-purple-900/10 opacity-90'
           : inUse
             ? 'border-uach-gold-500/40 ring-1 ring-uach-gold-400/25'
-            : 'border-uach-purple-900/15 hover:border-uach-purple-700/25 hover:shadow-md'
+            : displayState === 'CHECK_IN'
+              ? 'border-amber-300/50 hover:border-amber-400/60 hover:shadow-md'
+              : 'border-uach-purple-900/15 hover:border-uach-purple-700/25 hover:shadow-md'
       }`}
     >
       <div className="flex flex-col sm:flex-row">
@@ -69,23 +125,19 @@ export function MisReservaCard({ reservation, variant }) {
                 </p>
               ) : null}
             </div>
-            <span
-              className={`font-praxis shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-                reservation.status === 'CANCELLED'
-                  ? 'bg-red-50 text-red-700'
-                  : reservation.status === 'COMPLETED'
-                    ? 'bg-uach-purple-900/8 text-uach-purple-900/55'
-                    : isReservationPendingApproval(reservation.status)
-                      ? 'bg-amber-50 text-amber-800'
-                      : inUse
-                        ? 'bg-uach-gold-400/25 text-uach-purple-900'
-                        : isReservationApproved(reservation.status) && !isPast
-                          ? 'bg-uach-gold-400/20 text-uach-purple-900'
-                          : 'bg-uach-purple-900/8 text-uach-purple-900/55'
-              }`}
-            >
-              {inUse ? 'En uso' : statusLabel}
-            </span>
+            {isFinished ? (
+              <span className="font-praxis shrink-0 rounded-full bg-uach-purple-900/8 px-3 py-1 text-xs font-semibold text-uach-purple-900/55">
+                Finalizada
+              </span>
+            ) : (
+              <span
+                className={`font-praxis shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                  BADGE_STYLES[displayState] ?? 'bg-uach-purple-900/8 text-uach-purple-900/55'
+                }`}
+              >
+                {displayLabel}
+              </span>
+            )}
           </div>
 
           <dl className="font-praxis grid gap-1 text-sm text-uach-purple-900/80">
@@ -108,12 +160,6 @@ export function MisReservaCard({ reservation, variant }) {
                 <dd>{formatCheckTimestamp(reservation.checkedInAt)}</dd>
               </div>
             ) : null}
-            {hasCheckedOut(reservation) ? (
-              <div>
-                <dt className="text-uach-purple-900/55">Check-out</dt>
-                <dd>{formatCheckTimestamp(reservation.checkedOutAt)}</dd>
-              </div>
-            ) : null}
           </dl>
 
           {inUse ? (
@@ -121,34 +167,65 @@ export function MisReservaCard({ reservation, variant }) {
               deadline={usageEndDeadline}
               label="Tiempo restante de uso"
               variant="usage"
-              expiredMessage="Tu horario de reserva ha terminado. Realiza check-out en el lobby."
+              expiredMessage="Tu horario de reserva ha terminado."
             />
           ) : null}
 
-          {showCheckInWindow ? <CheckInWindowCountdown reservation={reservation} /> : null}
+          {showCheckIn ? (
+            <CheckInWindowCountdown onCheckIn={handleOpenCheckIn} />
+          ) : null}
 
-          {reservation.status === 'COMPLETED' ? (
+          {canCancel ? (
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={isCancelling}
+              className="font-praxis w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            >
+              {isCancelling ? 'Cancelando…' : 'Cancelar reserva'}
+            </button>
+          ) : null}
+
+          {showCancellationNotice && cancelDeadline ? (
+            <p className="font-praxis rounded-lg border border-amber-200/70 bg-amber-50/50 px-4 py-3 text-xs leading-relaxed text-amber-950/90">
+              La cancelación solo es posible hasta{' '}
+              {cancelDeadline.toLocaleString('es-MX', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}{' '}
+              ({CANCELLATION_MIN_HOURS} hora de anticipación). Si no haces check-in antes de que
+              termine tu horario, se aplicará una sanción.
+            </p>
+          ) : null}
+
+          {cancelError ? (
+            <p className="font-praxis text-sm text-red-600">{cancelError}</p>
+          ) : null}
+
+          {isPast && reservation.status === 'CANCELLED' && !isReservationSanctioned(reservation) ? (
             <p className="font-praxis text-xs text-uach-purple-900/55">
-              Reserva finalizada: check-in y check-out registrados.
+              Reserva cancelada.
             </p>
           ) : null}
 
-          {reservation.status === 'CANCELLED' ? (
+          {isPast &&
+          (isReservationSanctioned(reservation) || isReservationMissedCheckIn(reservation)) ? (
             <p className="font-praxis text-xs text-red-700/80">
-              Esta reserva fue cancelada y el cubículo no estuvo disponible para ti.
+              Se aplicó una sanción (check-in fuera de plazo o incumplimiento de la reserva).
             </p>
           ) : null}
 
-          {!isPast && isReservationPendingApproval(reservation.status) ? (
-            <p className="font-praxis text-xs text-amber-800/90">
-              Un administrador debe aprobar tu reserva antes de que puedas usar el cubículo.
+          {isPast && hasCheckedIn(reservation) ? (
+            <p className="font-praxis text-xs text-uach-purple-900/55">
+              Reserva finalizada.
             </p>
           ) : null}
 
           {inUse ? (
             <p className="font-praxis text-xs text-uach-purple-900/70">
-              Ya hiciste check-in. Recuerda hacer check-out al terminar tu sesión en el
-              cubículo.
+              Estás usando el cubículo. Tu sesión termina al finalizar el horario reservado.
             </p>
           ) : null}
         </div>

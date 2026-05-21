@@ -1,4 +1,7 @@
-const MOCK_RESERVATIONS_KEY = 'sgrc.mock.cubicle-reservations.v5'
+/** Clave en localStorage donde se guardan las reservas (modo mock). */
+export const MOCK_RESERVATIONS_STORAGE_KEY = 'sgrc.mock.cubicle-reservations.v9'
+
+const LAST_CREATED_KEY = 'sgrc.lastCreatedReservationId'
 
 /**
  * @typedef {object} CubicleReservation
@@ -10,6 +13,8 @@ const MOCK_RESERVATIONS_KEY = 'sgrc.mock.cubicle-reservations.v5'
  * @property {'APPROVED' | 'PENDING' | 'CANCELLED' | 'COMPLETED'} status
  * @property {string} [checkedInAt] ISO 8601
  * @property {string} [checkedOutAt] ISO 8601
+ * @property {string} [cancelledAt] ISO 8601
+ * @property {boolean} [sanctioned]
  * @property {string} [createdAt]
  */
 
@@ -38,7 +43,25 @@ function buildSeedReservations() {
       reservationDate: addDays(today, 3),
       startTime: '10:00:00',
       endTime: '12:00:00',
-      status: 'PENDING',
+      status: 'APPROVED',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 2005,
+      cubicleId: 1,
+      reservationDate: today,
+      startTime: '10:00:00',
+      endTime: '11:00:00',
+      status: 'APPROVED',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 2006,
+      cubicleId: 1,
+      reservationDate: today,
+      startTime: '11:00:00',
+      endTime: '12:00:00',
+      status: 'APPROVED',
       createdAt: new Date().toISOString(),
     },
     {
@@ -46,14 +69,14 @@ function buildSeedReservations() {
       cubicleId: 1,
       reservationDate: today,
       startTime: '08:00:00',
-      endTime: '19:00:00',
+      endTime: '09:00:00',
       status: 'APPROVED',
-      checkedInAt: toReservationDateTime(today, '10:15:00'),
+      checkedInAt: toReservationDateTime(today, '08:10:00'),
       createdAt: toReservationDateTime(addDays(today, -1), '18:30:00'),
     },
     {
       id: 2003,
-      cubicleId: 4,
+      cubicleId: 2,
       reservationDate: addDays(today, -3),
       startTime: '14:00:00',
       endTime: '16:00:00',
@@ -74,9 +97,14 @@ function buildSeedReservations() {
   ]
 }
 
+function generateReservationId(list) {
+  const maxId = list.reduce((max, item) => Math.max(max, item.id ?? 0), 0)
+  return Math.max(maxId + 1, Date.now())
+}
+
 function readStoredReservations() {
   try {
-    const raw = localStorage.getItem(MOCK_RESERVATIONS_KEY)
+    const raw = localStorage.getItem(MOCK_RESERVATIONS_STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw)
     return Array.isArray(parsed) ? parsed : null
@@ -86,7 +114,21 @@ function readStoredReservations() {
 }
 
 function writeStoredReservations(reservations) {
-  localStorage.setItem(MOCK_RESERVATIONS_KEY, JSON.stringify(reservations))
+  localStorage.setItem(MOCK_RESERVATIONS_STORAGE_KEY, JSON.stringify(reservations))
+}
+
+/** @param {number} reservationId */
+export function getMockReservationById(reservationId) {
+  const list = getMockUserReservations()
+  return list.find((item) => item.id === reservationId) ?? null
+}
+
+/** @returns {number | null} */
+export function getLastCreatedReservationId() {
+  const raw = localStorage.getItem(LAST_CREATED_KEY)
+  if (!raw) return null
+  const id = Number(raw)
+  return Number.isInteger(id) ? id : null
 }
 
 function ensureSeedReservations() {
@@ -113,17 +155,67 @@ export function getMockUserReservations() {
  */
 export function addMockUserReservation(body) {
   const list = getMockUserReservations()
+  const id = generateReservationId(list)
+
   const reservation = {
-    id: Date.now(),
+    id,
     cubicleId: body.cubicleId,
     reservationDate: body.reservationDate,
     startTime: body.startTime,
     endTime: body.endTime,
-    status: 'PENDING',
+    status: 'APPROVED',
     createdAt: new Date().toISOString(),
   }
 
   list.unshift(reservation)
+  writeStoredReservations(list)
+  localStorage.setItem(LAST_CREATED_KEY, String(id))
+
+  return reservation
+}
+
+/** @param {number} reservationId */
+export function performMockCubicleCheckIn(reservationId) {
+  const list = getMockUserReservations()
+  const reservation = list.find((item) => item.id === reservationId)
+
+  if (!reservation) {
+    throw new Error('Reserva no encontrada.')
+  }
+
+  if (reservation.status === 'CANCELLED') {
+    throw new Error('Esta reserva está cancelada.')
+  }
+
+  reservation.checkedInAt = new Date().toISOString()
+  reservation.status = 'APPROVED'
+  writeStoredReservations(list)
+  return reservation
+}
+
+/**
+ * @param {number} reservationId
+ * @param {{ sanctioned?: boolean }} [options]
+ */
+export function performMockCubicleCancel(reservationId, options = {}) {
+  const list = getMockUserReservations()
+  const reservation = list.find((item) => item.id === reservationId)
+
+  if (!reservation) {
+    throw new Error('Reserva no encontrada.')
+  }
+
+  if (reservation.status === 'CANCELLED') {
+    throw new Error('Esta reserva ya está cancelada.')
+  }
+
+  if (reservation.checkedInAt) {
+    throw new Error('No puedes cancelar una reserva que ya está en uso.')
+  }
+
+  reservation.status = 'CANCELLED'
+  reservation.cancelledAt = new Date().toISOString()
+  reservation.sanctioned = Boolean(options.sanctioned)
   writeStoredReservations(list)
   return reservation
 }

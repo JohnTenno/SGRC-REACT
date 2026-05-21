@@ -94,8 +94,19 @@ src/
 | `/reserva-de-cubiculo` | Selección de cubículo |
 | `/reserva-de-cubiculo/:id` | Formulario de reserva |
 | `/mis-reservas` | Reservas del usuario |
+| `/check-in/:id` | Check-in por QR (id = reserva) |
 | `/renta-de-equipo` | Catálogo y solicitud de equipo |
 | `/renta-de-equipo/orden` | Comprobante de solicitud |
+
+## Probar check-in con cámara en el celular
+
+1. Mac y celular en la **misma Wi‑Fi**.
+2. En el proyecto: `pnpm dev` (servidor en red local).
+3. En la terminal, abre la URL **Network**, por ejemplo `http://192.168.100.140:5173/`.
+4. Inicia sesión → Mis reservas → Escanear QR (o `/check-in/{id}`).
+5. Si el navegador del celular no abre la cámara con HTTP, prueba en **localhost** en el mismo dispositivo o despliega con HTTPS en staging.
+
+Pantallas de tablet (QR en la puerta): `/entrada/1`, `/entrada/2`, `/entrada/3`.
 
 ## Problemas frecuentes
 

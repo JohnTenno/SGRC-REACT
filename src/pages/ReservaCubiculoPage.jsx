@@ -3,7 +3,16 @@ import { Link, useNavigate } from 'react-router-dom'
 import { CubiculoCard } from '@/components/cards/CubiculoCard'
 import { HeroHeader } from '@/components/layout/HeroHeader'
 import { Navbar } from '@/components/layout/Navbar'
+import { getAvailableSlots } from '@/data/mockCubiculoAvailability'
 import { MOCK_CUBICLES } from '@/data/mockCubiculos'
+
+const todayIso = new Date().toISOString().slice(0, 10)
+
+const todayLabel = new Date(`${todayIso}T12:00:00`).toLocaleDateString('es-MX', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+})
 
 export function ReservaCubiculoPage() {
   const navigate = useNavigate()
@@ -53,7 +62,7 @@ export function ReservaCubiculoPage() {
                 Cubículos disponibles
               </h2>
               <p className="font-praxis mt-1 text-sm text-uach-purple-900/65">
-                Selecciona un espacio para elegir fecha y horario.
+                Selecciona un cubículo para elegir fecha y horario.
               </p>
 
               {fieldErrors.cubicle ? (
@@ -65,8 +74,9 @@ export function ReservaCubiculoPage() {
                   <li key={cubicle.id} className="flex">
                     <CubiculoCard
                       name={cubicle.name}
-                      description={cubicle.description}
                       capacity={cubicle.capacity}
+                      availableTimes={getAvailableSlots(cubicle.id, todayIso)}
+                      availabilityDayLabel={todayLabel}
                       image={cubicle.image}
                       imageAlt={cubicle.imageAlt}
                       selected={selectedCubicleId === cubicle.id}

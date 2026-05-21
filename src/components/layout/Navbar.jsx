@@ -16,19 +16,9 @@ function getInitials(name) {
     .toUpperCase()
 }
 
-function ProfileAvatar({ name, photoUrl, size = 'md' }) {
+function ProfileInitials({ name, size = 'md' }) {
   const sizeClass =
     size === 'lg' ? 'size-20 text-lg' : 'size-10 text-sm'
-
-  if (photoUrl) {
-    return (
-      <img
-        src={photoUrl}
-        alt={`Foto de perfil de ${name}`}
-        className={`${sizeClass} shrink-0 rounded-full object-cover ring-2 ring-uach-gold-400/50`}
-      />
-    )
-  }
 
   return (
     <div
@@ -45,11 +35,7 @@ function UserProfileInfo({ user, avatarSize = 'md' }) {
 
   return (
     <div className={`flex min-w-0 items-center ${isLarge ? 'gap-4' : 'gap-3'}`}>
-      <ProfileAvatar
-        name={user.name}
-        photoUrl={user.photoUrl}
-        size={avatarSize}
-      />
+      <ProfileInitials name={user.name} size={avatarSize} />
       <div className={`min-w-0 text-left ${!isLarge ? 'md:text-right' : ''}`}>
         <p
           className={`font-alverata font-semibold text-white ${

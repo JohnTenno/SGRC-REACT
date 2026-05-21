@@ -140,6 +140,56 @@
     @apply disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-uach-purple-950/40 disabled:text-white/50;
   }
 
+  /** Tablet en puerta: solo QR, sin scroll ni selección. */
+  .lobby-qr-screen {
+    overscroll-behavior: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /** Contenedor fijo 1:1: cámara y marco comparten el mismo cuadrado. */
+  .check-in-qr-scanner-shell {
+    isolation: isolate;
+  }
+
+  .check-in-qr-reader__viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .check-in-qr-reader__viewport > div {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+  }
+
+  .check-in-qr-reader__viewport video {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    object-fit: cover;
+  }
+
+  .check-in-qr-reader__viewport canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
   /** Hero compacto — reserva de cubículos y renta de equipo */
   .reserva-cubiculo-hero header > div,
   .reserva-servicio-hero header > div {

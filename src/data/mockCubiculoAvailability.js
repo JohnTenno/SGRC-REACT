@@ -9,9 +9,6 @@ const DEFAULT_OCCUPIED_BY_CUBICLE = {
   1: ['10:00', '11:00'],
   2: ['09:00', '14:00', '15:00'],
   3: ['14:00'],
-  4: ['12:00', '13:00'],
-  5: ['16:00', '17:00', '18:00'],
-  6: ['10:00'],
 }
 
 /**
@@ -44,6 +41,19 @@ export function getSlotsWithStatus(cubicleId, reservationDate) {
     time,
     status: occupied.has(time) ? 'occupied' : 'available',
   }))
+}
+
+/**
+ * @param {number} cubicleId
+ * @param {string} reservationDate YYYY-MM-DD
+ * @returns {string[]} horas de inicio disponibles (HH:MM)
+ */
+export function getAvailableSlots(cubicleId, reservationDate) {
+  if (!reservationDate) return []
+
+  return getSlotsWithStatus(cubicleId, reservationDate)
+    .filter((slot) => slot.status === 'available')
+    .map((slot) => slot.time)
 }
 
 /**
