@@ -8,6 +8,14 @@ import escudoUach from '@/assets/escudo-color.png'
 
 /*simulacion de login exitoso (asi lo hago yo okey? no se como trabajas tu JAJA) t amo jonh*/
 
+/**
+ * @description Alright friend,
+ * Love u too.
+ * @author John Tenno
+ * @version 1.0.0
+ * @since 0.1.0
+ * */
+
 const labelClass =
   'font-alverata text-sm font-semibold uppercase tracking-[0.12em] text-white/95'
 
