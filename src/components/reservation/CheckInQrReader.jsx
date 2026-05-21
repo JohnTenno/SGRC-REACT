@@ -96,7 +96,7 @@ export function CheckInQrReader({
             if (handledRef.current || isSubmittingRef.current) return
             handledRef.current = true
             await scanner.stop().catch(() => {})
-            scanner.clear().catch(() => {})
+            scanner.clear()?.catch(() => {})
             await onScanSuccessRef.current(decodedText)
           },
           () => {},
@@ -132,7 +132,7 @@ export function CheckInQrReader({
       handledRef.current = true
       if (scannerRef.current) {
         scannerRef.current.stop().catch(() => {})
-        scannerRef.current.clear().catch(() => {})
+        scannerRef.current.clear()?.catch(() => {})
         scannerRef.current = null
       }
     }
