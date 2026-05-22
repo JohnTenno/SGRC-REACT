@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Navbar } from '@/components/layout/Navbar'
-import { MisReservaCard } from '@/components/reservation/MisReservaCard'
+import { MyReservationCard } from '@/components/reservation/MyReservationCard'
 import { fetchMyCubicleReservations } from '@/lib/cubicleReservationApi'
 import { splitReservationsByTimeline } from '@/lib/reservationTimeline'
 
@@ -21,7 +21,7 @@ function ReservationsSection({ title, description, reservations, variant, emptyM
         <ul className="flex flex-col gap-4">
           {reservations.map((reservation) => (
             <li key={reservation.id}>
-              <MisReservaCard
+              <MyReservationCard
                 reservation={reservation}
                 variant={variant}
                 onUpdated={onUpdated}
@@ -34,7 +34,7 @@ function ReservationsSection({ title, description, reservations, variant, emptyM
   )
 }
 
-export function MisReservasPages() {
+export function MyReservationsPage() {
   const [reservations, setReservations] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState(null)
@@ -84,7 +84,7 @@ export function MisReservasPages() {
             </p>
           </div>
           <Link
-            to="/reserva-de-cubiculo"
+            to="/cubicle-reservation"
             className="button-primary w-full shrink-0 sm:w-auto sm:min-w-[12rem]"
           >
             Nueva reserva
@@ -117,7 +117,7 @@ export function MisReservasPages() {
               Cuando reserves un cubículo, aparecerá aquí para que hagas check-in o consultes su
               estado.
             </p>
-            <Link to="/reserva-de-cubiculo" className="button-primary mt-2">
+            <Link to="/cubicle-reservation" className="button-primary mt-2">
               Reservar cubículo
             </Link>
           </div>

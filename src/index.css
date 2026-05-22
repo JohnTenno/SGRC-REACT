@@ -190,29 +190,29 @@
     overflow: hidden;
   }
 
-  /** Hero compacto — reserva de cubículos y renta de equipo */
-  .reserva-cubiculo-hero header > div,
-  .reserva-servicio-hero header > div {
+  /** Compact hero — cubicle reservation and equipment rental */
+  .cubicle-reservation-hero header > div,
+  .equipment-rental-hero header > div {
     @apply !min-h-[150px] sm:!min-h-[200px] lg:!min-h-[240px];
   }
 
-  .reserva-cubiculo-hero header > div > .relative.z-10,
-  .reserva-servicio-hero header > div > .relative.z-10 {
+  .cubicle-reservation-hero header > div > .relative.z-10,
+  .equipment-rental-hero header > div > .relative.z-10 {
     @apply !min-h-[150px] py-6 sm:!min-h-[200px] sm:px-10 lg:!min-h-[240px];
   }
 
-  .reserva-cubiculo-hero header h1,
-  .reserva-servicio-hero header h1 {
+  .cubicle-reservation-hero header h1,
+  .equipment-rental-hero header h1 {
     @apply text-2xl sm:text-3xl;
   }
 
-  .reserva-cubiculo-hero header p,
-  .reserva-servicio-hero header p {
+  .cubicle-reservation-hero header p,
+  .equipment-rental-hero header p {
     @apply mt-3 text-sm sm:text-base;
   }
 
-  .reserva-cubiculo-hero header button,
-  .reserva-servicio-hero header button {
+  .cubicle-reservation-hero header button,
+  .equipment-rental-hero header button {
     @apply hidden;
   }
 }

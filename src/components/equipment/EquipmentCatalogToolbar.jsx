@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { EQUIPMENT_CATEGORY_LABELS } from '@/data/mockEquioment'
+import { EQUIPMENT_CATEGORY_LABELS } from '@/data/mockEquipment'
 
 /** @typedef {'all' | 'in_stock' | 'out_of_stock'} StockFilter */
 /** @typedef {'all' | keyof typeof EQUIPMENT_CATEGORY_LABELS} CategoryFilter */

@@ -8,7 +8,7 @@
  * @param {boolean} [props.disabled]
  * @param {() => void} props.onSelect
  */
-export function EquipoCard({
+export function EquipmentCard({
   type,
   availableStock,
   image,

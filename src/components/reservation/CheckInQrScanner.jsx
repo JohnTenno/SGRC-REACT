@@ -3,7 +3,7 @@ import { CheckInQrReader } from '@/components/reservation/CheckInQrReader'
 /**
  * Modal con escáner QR (legado; preferir ruta /check-in/:id).
  * @param {object} props
- * @param {import('@/data/mockUserReservations').CubicleReservation} props.reservation
+ * @param {object} props.reservation
  * @param {(scannedPayload: string) => void | Promise<void>} props.onScanSuccess
  * @param {() => void} props.onClose
  * @param {boolean} [props.isSubmitting]

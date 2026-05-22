@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { EquipmentOrderExportTemplate } from '@/components/equipment/EquipmentOrderExportTemplate'
 import { Navbar } from '@/components/layout/Navbar'
@@ -39,7 +39,7 @@ function DownloadIcon() {
   )
 }
 
-export function RentaEquipoOrdenPage() {
+export function EquipmentRentalOrderPage() {
   const location = useLocation()
   const order = location.state?.order
   const exportTemplateRef = useRef(null)
@@ -47,7 +47,7 @@ export function RentaEquipoOrdenPage() {
   const [exportError, setExportError] = useState(null)
 
   if (!order?.id || !order?.items?.length) {
-    return <Navigate to="/renta-de-equipo" replace />
+    return <Navigate to="/equipment-rental" replace />
   }
 
   const totalUnits = order.items.reduce((sum, item) => sum + item.quantity, 0)
@@ -96,7 +96,7 @@ export function RentaEquipoOrdenPage() {
           <span className="mx-2" aria-hidden="true">
             /
           </span>
-          <Link to="/renta-de-equipo" className="transition hover:text-uach-purple-900">
+          <Link to="/equipment-rental" className="transition hover:text-uach-purple-900">
             Renta de equipo
           </Link>
           <span className="mx-2" aria-hidden="true">
@@ -212,7 +212,7 @@ export function RentaEquipoOrdenPage() {
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
-            to="/renta-de-equipo"
+            to="/equipment-rental"
             className="button-primary w-full text-center sm:w-auto sm:min-w-[14rem]"
           >
             Nueva solicitud

@@ -1,5 +1,3 @@
-import { getMockUserReservations } from '@/data/mockUserReservations'
-
 /** Horas mínimas de anticipación para cancelar sin sanción */
 export const CANCELLATION_MIN_HOURS = 1
 
@@ -9,7 +7,8 @@ export const CANCELLATION_MIN_HOURS = 1
  * @param {string} time HH:MM o HH:MM:SS
  */
 export function formatTimeForDisplay(time) {
-  return time.slice(0, 5)
+  if (!time) return '--:--'
+  return String(time).slice(0, 5)
 }
 
 /**
@@ -218,31 +217,3 @@ export function splitReservationsByTimeline(reservations) {
   return { active, past }
 }
 
-/**
- * Reserva activa en la tablet de entrada del cubículo (según horario).
- * @param {number} cubicleId
- * @param {number} [now]
- * @returns {import('@/data/mockUserReservations').CubicleReservation | null}
- */
-export function getActiveLobbyReservation(cubicleId, now = Date.now()) {
-  const numericId = Number(cubicleId)
-  if (!Number.isInteger(numericId) || numericId < 1) return null
-
-  const today = new Date().toISOString().slice(0, 10)
-  const reservations = getMockUserReservations().filter(
-    (item) =>
-      item.cubicleId === numericId &&
-      item.reservationDate === today &&
-      item.status !== 'CANCELLED' &&
-      isReservationLobbyQrVisible(item, now),
-  )
-
-  if (reservations.length === 0) return null
-
-  reservations.sort(
-    (a, b) =>
-      getReservationStartDateTime(a).getTime() - getReservationStartDateTime(b).getTime(),
-  )
-
-  return reservations[0]
-}

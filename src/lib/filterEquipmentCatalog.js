@@ -1,17 +1,17 @@
-import { MOCK_EQUIOMENT } from '@/data/mockEquioment'
+import { MOCK_EQUIPMENT } from '@/data/mockEquipment'
 
 /**
  * @param {object} options
  * @param {string} [options.searchQuery]
  * @param {'all' | 'in_stock' | 'out_of_stock'} [options.stockFilter]
  * @param {'all' | string} [options.categoryFilter]
- * @param {typeof MOCK_EQUIOMENT} [options.items]
+ * @param {typeof MOCK_EQUIPMENT} [options.items]
  */
 export function filterEquipmentCatalog({
   searchQuery = '',
   stockFilter = 'all',
   categoryFilter = 'all',
-  items = MOCK_EQUIOMENT,
+  items = MOCK_EQUIPMENT,
 }) {
   const query = searchQuery.trim().toLowerCase()
 

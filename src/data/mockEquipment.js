@@ -12,7 +12,7 @@ export const EQUIPMENT_CATEGORY_LABELS = {
 }
 
 /**
- * @typedef {object} MockEquioment
+ * @typedef {object} MockEquipment
  * @property {number} id
  * @property {string} type
  * @property {EquipmentCategory} category
@@ -21,8 +21,8 @@ export const EQUIPMENT_CATEGORY_LABELS = {
  * @property {string} imageAlt
  */
 
-/** @type {MockEquioment[]} */
-export const MOCK_EQUIOMENT = [
+/** @type {MockEquipment[]} */
+export const MOCK_EQUIPMENT = [
   {
     id: 1,
     type: 'Laptop',
@@ -74,26 +74,26 @@ export const MOCK_EQUIOMENT = [
 ]
 
 /** @param {number | string} id */
-export function getEquiomentById(id) {
+export function getEquipmentById(id) {
   const numericId = Number(id)
   if (!Number.isInteger(numericId) || numericId < 1) return null
-  return MOCK_EQUIOMENT.find((item) => item.id === numericId) ?? null
+  return MOCK_EQUIPMENT.find((item) => item.id === numericId) ?? null
 }
 
 /** @param {number[]} ids */
-export function getEquiomentByIds(ids) {
+export function getEquipmentByIds(ids) {
   return ids
-    .map((id) => getEquiomentById(id))
+    .map((id) => getEquipmentById(id))
     .filter((item) => item != null && item.availableStock > 0)
 }
 
 /**
  * @param {{ equipmentId: number, quantity: number }[]} selections
  */
-export function resolveEquiomentSelections(selections) {
+export function resolveEquipmentSelections(selections) {
   return selections
     .map(({ equipmentId, quantity }) => {
-      const item = getEquiomentById(equipmentId)
+      const item = getEquipmentById(equipmentId)
       if (!item || quantity < 1) return null
       const cappedQty = Math.min(quantity, item.availableStock)
       return { ...item, quantity: cappedQty }

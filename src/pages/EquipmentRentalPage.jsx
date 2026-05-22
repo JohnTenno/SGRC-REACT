@@ -1,13 +1,13 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EquipmentCatalogToolbar } from '@/components/equipment/EquipmentCatalogToolbar'
-import { EquipoSelectionSummary } from '@/components/equipment/EquipoSelectionSummary'
-import { EquipoCard } from '@/components/cards/EquipoCard'
+import { EquipmentSelectionSummary } from '@/components/equipment/EquipmentSelectionSummary'
+import { EquipmentCard } from '@/components/cards/EquipmentCard'
 import { FailAnimation } from '@/components/animations/FailAnimation'
 import { SuccessAnimation } from '@/components/animations/SuccessAnimation'
 import { HeroHeader } from '@/components/layout/HeroHeader'
 import { Navbar } from '@/components/layout/Navbar'
-import { MOCK_EQUIOMENT, getEquiomentById } from '@/data/mockEquioment'
+import { MOCK_EQUIPMENT, getEquipmentById } from '@/data/mockEquipment'
 import { createEquipmentRentalRequest } from '@/lib/equipmentRentalApi'
 import {
   filterEquipmentCatalog,
@@ -20,7 +20,7 @@ function clampQuantityForItem(item, quantity) {
   return Math.max(1, Math.min(quantity, item.availableStock))
 }
 
-export function RentaEquipoPage() {
+export function EquipmentRentalPage() {
   const navigate = useNavigate()
   const [quantitiesById, setQuantitiesById] = useState({})
   const [fieldErrors, setFieldErrors] = useState({})
@@ -52,7 +52,7 @@ export function RentaEquipoPage() {
     () =>
       Object.entries(quantitiesById)
         .map(([id, quantity]) => {
-          const item = getEquiomentById(Number(id))
+          const item = getEquipmentById(Number(id))
           if (!item || quantity < 1) return null
           return { ...item, quantity }
         })
@@ -63,7 +63,7 @@ export function RentaEquipoPage() {
   const hasSelection = selectedEquipment.length > 0
 
   function toggleSelection(id) {
-    const item = getEquiomentById(id)
+    const item = getEquipmentById(id)
     if (!item || item.availableStock <= 0) return
 
     setQuantitiesById((current) => {
@@ -87,7 +87,7 @@ export function RentaEquipoPage() {
   }
 
   function updateQuantity(id, nextQuantity) {
-    const item = getEquiomentById(id)
+    const item = getEquipmentById(id)
     if (!item) return
 
     if (nextQuantity < 1) {
@@ -100,7 +100,7 @@ export function RentaEquipoPage() {
     setFieldErrors({})
   }
 
-  async function handleSolicitar() {
+  async function handleSubmitRequest() {
     if (selectedEquipment.length === 0) {
       setFieldErrors({ equipment: 'Selecciona al menos un equipo para solicitar.' })
       return
@@ -131,7 +131,7 @@ export function RentaEquipoPage() {
   function handleSuccessComplete() {
     setShowSuccess(false)
     setQuantitiesById({})
-    navigate('/renta-de-equipo/orden', { state: { order: pendingOrder } })
+    navigate('/equipment-rental/order', { state: { order: pendingOrder } })
     setPendingOrder(null)
   }
 
@@ -157,7 +157,7 @@ export function RentaEquipoPage() {
       ) : null}
 
       <main className="flex flex-1 flex-col gap-8 bg-white">
-        <div className="reserva-servicio-hero">
+        <div className="equipment-rental-hero">
           <HeroHeader
             title="Renta de equipo universitario"
             description="Arma tu solicitud con los artículos y cantidades que necesitas. Al enviarla generaremos tu orden de recogida."
@@ -200,7 +200,7 @@ export function RentaEquipoPage() {
                   categoryFilter={categoryFilter}
                   onCategoryFilterChange={setCategoryFilter}
                   resultCount={filteredEquipment.length}
-                  totalCount={MOCK_EQUIOMENT.length}
+                  totalCount={MOCK_EQUIPMENT.length}
                   hasActiveFilters={hasActiveFilters}
                   onClearFilters={() => {
                     setSearchQuery('')
@@ -223,7 +223,7 @@ export function RentaEquipoPage() {
                 <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredEquipment.map((item) => (
                     <li key={item.id} className="flex">
-                      <EquipoCard
+                      <EquipmentCard
                         type={item.type}
                         availableStock={item.availableStock}
                         image={item.image}
@@ -253,14 +253,14 @@ export function RentaEquipoPage() {
             aria-label="Enviar solicitud"
           >
             <div className="page-shell flex flex-col gap-4 py-4 sm:flex-row sm:items-end sm:justify-between">
-              <EquipoSelectionSummary
+              <EquipmentSelectionSummary
                 items={selectedEquipment}
                 onRemove={removeFromSelection}
                 onQuantityChange={updateQuantity}
               />
               <button
                 type="button"
-                onClick={handleSolicitar}
+                onClick={handleSubmitRequest}
                 disabled={isSubmitting}
                 className="button-primary w-full shrink-0 sm:w-auto sm:min-w-[14rem]"
               >

@@ -1,7 +1,6 @@
 import { Html5Qrcode } from 'html5-qrcode'
 import { useEffect, useId, useRef, useState } from 'react'
 
-/** Alinea vídeo/canvas dentro del marco cuadrado (html5-qrcode inyecta nodos en flujo normal). */
 function applyScannerViewportLayout(hostId) {
   const root = document.getElementById(hostId)
   if (!root) return
@@ -50,7 +49,7 @@ function applyScannerViewportLayout(hostId) {
 
 /**
  * @param {object} props
- * @param {import('@/data/mockUserReservations').CubicleReservation} [props.reservation]
+ * @param {object} [props.reservation]
  * @param {(scannedPayload: string) => void | Promise<void>} props.onScanSuccess
  * @param {boolean} [props.isSubmitting]
  * @param {string} [props.regionIdPrefix]
@@ -87,16 +86,14 @@ export function CheckInQrReader({
         scanner = new Html5Qrcode(regionId)
         if (cancelled) return
         scannerRef.current = scanner
-
-        // Sin qrbox: evita el overlay blanco (#ffffff) que dibuja html5-qrcode.
         await scanner.start(
           { facingMode: 'environment' },
           { fps: 10, aspectRatio: 1 },
           async (decodedText) => {
             if (handledRef.current || isSubmittingRef.current) return
             handledRef.current = true
-            await scanner.stop().catch(() => {})
-            scanner.clear()?.catch(() => {})
+            try { await scanner.stop() } catch { /* already stopped */ }
+            try { scanner.clear() } catch { /* ignore */ }
             await onScanSuccessRef.current(decodedText)
           },
           () => {},
@@ -131,8 +128,8 @@ export function CheckInQrReader({
       layoutObserver?.disconnect()
       handledRef.current = true
       if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {})
-        scannerRef.current.clear()?.catch(() => {})
+        try { scannerRef.current.stop() } catch { /* already stopped */ }
+        try { scannerRef.current.clear() } catch { /* ignore */ }
         scannerRef.current = null
       }
     }

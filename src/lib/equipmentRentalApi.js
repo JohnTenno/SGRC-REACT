@@ -1,4 +1,4 @@
-import { resolveEquiomentSelections } from '@/data/mockEquioment'
+import { resolveEquipmentSelections } from '@/data/mockEquipment'
 import { getAuthSession } from '@/lib/authSession'
 
 export const EQUIPMENT_PICKUP_LOCATION = 'Biblioteca — mostrador de material solicitado'
@@ -17,7 +17,7 @@ const STATUS_LABELS = {
  * @property {typeof EQUIPMENT_REQUEST_STATUS.PENDING_PICKUP | string} status
  * @property {string} [createdAt] ISO 8601
  * @property {string} [pickupLocation]
- * @property {import('@/data/mockEquioment').MockEquioment & { quantity: number }[]} items
+ * @property {import('@/data/mockEquipment').MockEquipment & { quantity: number }[]} items
  */
 
 /**
@@ -38,7 +38,7 @@ export function buildEquipmentRentalRequestBody(selections) {
  * @returns {EquipmentRentalRequest}
  */
 export function normalizeEquipmentRentalRequest(apiData, selections) {
-  const items = resolveEquiomentSelections(selections)
+  const items = resolveEquipmentSelections(selections)
 
   const id = Number(apiData?.id)
   if (!Number.isInteger(id) || id < 1) {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { clearAuthSession, getAuthSession } from '@/lib/authSession'
 import escudoUach from '@/assets/escudo-color.png'
@@ -56,9 +56,9 @@ function UserProfileInfo({ user, avatarSize = 'md' }) {
   )
 }
 
-function MisReservasLink({ className, onClick }) {
+function MyReservationsLink({ className, onClick }) {
   return (
-    <Link to="/mis-reservas" className={className} onClick={onClick}>
+    <Link to="/my-reservations" className={className} onClick={onClick}>
       Mis reservas
     </Link>
   )
@@ -169,7 +169,7 @@ function DesktopProfileMenu({ user }) {
           role="menu"
           className="absolute top-full right-0 left-0 z-50 mt-2 w-full min-w-full overflow-hidden rounded-md border border-uach-gold-400/60 bg-uach-purple-800 py-1 shadow-lg"
         >
-          <MisReservasLink
+          <MyReservationsLink
             role="menuitem"
             className={`${misReservasLinkClass} text-center`}
             onClick={() => setIsOpen(false)}
@@ -232,7 +232,7 @@ function MobileSideMenu({ user, isOpen, onClose }) {
         </div>
 
         <div className="flex flex-1 flex-col items-center gap-0 px-6 py-6">
-          <MisReservasLink
+          <MyReservationsLink
             className={`${misReservasLinkClass} w-full border-y border-white/10 text-center`}
             onClick={onClose}
           />

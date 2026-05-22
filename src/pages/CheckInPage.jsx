@@ -1,12 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { CheckInWelcomeAnimation } from '@/components/animations/CheckInWelcomeAnimation'
 import { FailAnimation } from '@/components/animations/FailAnimation'
 import { Navbar } from '@/components/layout/Navbar'
 import { CheckInQrReader } from '@/components/reservation/CheckInQrReader'
-import { getCubiculoById } from '@/data/mockCubiculos'
 import { getAuthSession } from '@/lib/authSession'
-import { getMockReservationById } from '@/data/mockUserReservations'
 import { fetchMyCubicleReservations, performCubicleCheckIn } from '@/lib/cubicleReservationApi'
 import {
   canPerformCheckIn,
@@ -26,18 +24,15 @@ export function CheckInPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [checkInDenied, setCheckInDenied] = useState(null)
   const [showWelcome, setShowWelcome] = useState(false)
-
-  const cubicle = reservation ? getCubiculoById(reservation.cubicleId) : null
+  const [scannerKey, setScannerKey] = useState(0)
 
   const loadReservation = useCallback(async () => {
     setIsLoading(true)
     setLoadError(null)
 
     try {
-      const found =
-        getMockReservationById(reservationId) ??
-        (await fetchMyCubicleReservations()).find((item) => item.id === reservationId) ??
-        null
+      const list = await fetchMyCubicleReservations()
+      const found = list.find((item) => item.id === reservationId) ?? null
 
       if (!found) {
         setLoadError('No encontramos esta reserva.')
@@ -66,7 +61,7 @@ export function CheckInPage() {
   }
 
   if (!Number.isFinite(reservationId) || reservationId < 1) {
-    return <Navigate to="/mis-reservas" replace />
+    return <Navigate to="/my-reservations" replace />
   }
 
   async function handleQrScanned(scannedPayload) {
@@ -84,6 +79,7 @@ export function CheckInPage() {
           ? error.message
           : error?.message ?? 'No se pudo registrar el check-in.',
       )
+      setScannerKey((k) => k + 1)
     } finally {
       setIsSubmitting(false)
     }
@@ -91,18 +87,19 @@ export function CheckInPage() {
 
   function handleWelcomeComplete() {
     setShowWelcome(false)
-    navigate('/mis-reservas', { replace: true })
+    navigate('/my-reservations', { replace: true })
   }
 
   const canCheckIn = reservation && canPerformCheckIn(reservation) && !hasCheckedIn(reservation)
+  const cubicleName = reservation?.cubicleIdentifier ?? null
 
   return (
     <div className="flex min-h-screen flex-col bg-uach-purple-950">
       <Navbar />
 
-      {showWelcome && cubicle && reservation ? (
+      {showWelcome && reservation ? (
         <CheckInWelcomeAnimation
-          cubicleName={cubicle.name}
+          cubicleName={cubicleName}
           startTime={reservation.startTime}
           endTime={reservation.endTime}
           onComplete={handleWelcomeComplete}
@@ -119,12 +116,10 @@ export function CheckInPage() {
 
       <main className="page-shell flex flex-1 flex-col gap-6 py-6 pb-10">
         <nav className="font-praxis text-sm text-white/60">
-          <Link to="/mis-reservas" className="transition hover:text-white">
+          <Link to="/my-reservations" className="transition hover:text-white">
             Mis reservas
           </Link>
-          <span className="mx-2" aria-hidden="true">
-            /
-          </span>
+          <span className="mx-2" aria-hidden="true">/</span>
           <span className="text-white">Check-in</span>
         </nav>
 
@@ -137,7 +132,7 @@ export function CheckInPage() {
         {loadError ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
             <p className="font-praxis text-red-200">{loadError}</p>
-            <Link to="/mis-reservas" className="button-primary">
+            <Link to="/my-reservations" className="button-primary">
               Volver a mis reservas
             </Link>
           </div>
@@ -149,10 +144,10 @@ export function CheckInPage() {
               <h1 className="font-alverata text-2xl font-semibold text-white sm:text-3xl">
                 Check-in
               </h1>
-              {cubicle ? (
-                <p className="font-alverata mt-2 text-lg text-uach-gold-400">{cubicle.name}</p>
+              {cubicleName ? (
+                <p className="font-alverata mt-2 text-lg text-uach-gold-400">{cubicleName}</p>
               ) : null}
-              <p className="font-praxis mt-3 max-w-md mx-auto text-sm leading-relaxed text-white/75">
+              <p className="font-praxis mt-3 mx-auto max-w-md text-sm leading-relaxed text-white/75">
                 Enfoca el código QR de la pantalla del cubículo dentro del recuadro para hacer
                 check-in.
               </p>
@@ -165,6 +160,7 @@ export function CheckInPage() {
 
             {canCheckIn ? (
               <CheckInQrReader
+                key={scannerKey}
                 reservation={reservation}
                 onScanSuccess={handleQrScanned}
                 isSubmitting={isSubmitting}
@@ -178,10 +174,7 @@ export function CheckInPage() {
                     ? 'Ya registraste tu check-in en esta reserva.'
                     : 'Esta reserva ya no admite check-in (cancelada o horario finalizado).'}
                 </p>
-                <Link
-                  to="/mis-reservas"
-                  className="button-primary mt-4 inline-block"
-                >
+                <Link to="/my-reservations" className="button-primary mt-4 inline-block">
                   Volver a mis reservas
                 </Link>
               </div>
@@ -195,7 +188,7 @@ export function CheckInPage() {
 
             <div className="mt-auto flex justify-center pt-2">
               <Link
-                to="/mis-reservas"
+                to="/my-reservations"
                 className="font-praxis text-sm text-white/70 transition hover:text-white"
               >
                 Cancelar y volver

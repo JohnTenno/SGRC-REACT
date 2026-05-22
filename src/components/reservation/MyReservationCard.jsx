@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getCubiculoById } from '@/data/mockCubiculos'
 import { CheckInWindowCountdown } from '@/components/reservation/CheckInWindowCountdown'
 import { ReservationCountdown } from '@/components/reservation/ReservationCountdown'
 import { cancelCubicleReservation } from '@/lib/cubicleReservationApi'
@@ -29,13 +28,12 @@ const BADGE_STYLES = {
 
 /**
  * @param {object} props
- * @param {import('@/data/mockUserReservations').CubicleReservation} props.reservation
+ * @param {object} props.reservation
  * @param {'active' | 'past'} props.variant
  * @param {() => void} [props.onUpdated]
  */
-export function MisReservaCard({ reservation, variant, onUpdated }) {
+export function MyReservationCard({ reservation, variant, onUpdated }) {
   const navigate = useNavigate()
-  const cubicle = getCubiculoById(reservation.cubicleId)
   const isPast = variant === 'past'
   const displayState = getReservationDisplayState(reservation)
   const displayLabel = getReservationDisplayLabel(displayState)
@@ -54,17 +52,15 @@ export function MisReservaCard({ reservation, variant, onUpdated }) {
     isCheckInWindowUpcoming(reservation)
   const [isCancelling, setIsCancelling] = useState(false)
   const [cancelError, setCancelError] = useState(null)
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
 
-  async function handleCancel() {
-    if (
-      !window.confirm(
-        '¿Confirmas que deseas cancelar esta reserva? Solo puedes cancelar con al menos 1 hora de anticipación.',
-      )
-    ) {
-      return
-    }
-
+  function handleCancel() {
     setCancelError(null)
+    setShowCancelDialog(true)
+  }
+
+  async function confirmCancel() {
+    setShowCancelDialog(false)
     setIsCancelling(true)
 
     try {
@@ -85,7 +81,8 @@ export function MisReservaCard({ reservation, variant, onUpdated }) {
     navigate(`/check-in/${reservation.id}`)
   }
 
-  return (
+ return (
+  <>
     <article
       className={`overflow-hidden rounded-xl border bg-white shadow-sm transition ${
         isPast
@@ -99,32 +96,21 @@ export function MisReservaCard({ reservation, variant, onUpdated }) {
     >
       <div className="flex flex-col sm:flex-row">
         <div className="relative h-36 w-full shrink-0 overflow-hidden bg-uach-purple-950 sm:h-auto sm:w-40">
-          {cubicle?.image ? (
-            <img
-              src={cubicle.image}
-              alt={cubicle.imageAlt}
-              loading="lazy"
-              decoding="async"
-              className={`absolute inset-0 h-full w-full object-cover ${isPast ? 'grayscale-[35%]' : ''}`}
-            />
-          ) : (
-            <div className="absolute inset-0 bg-uach-purple-900/40" aria-hidden="true" />
-          )}
+          <div
+            className="absolute inset-0 bg-uach-purple-900/40"
+            aria-hidden="true"
+          />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-3 p-5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <h3 className="font-alverata text-lg font-semibold text-uach-purple-900">
-                {cubicle?.name ?? `Cubículo #${reservation.cubicleId}`}
+                {reservation.cubicleIdentifier ??
+                  `Cubículo #${reservation.cubicleId}`}
               </h3>
-              {cubicle?.capacity != null ? (
-                <p className="font-praxis mt-0.5 text-sm text-uach-purple-900/60">
-                  Capacidad: {cubicle.capacity}{' '}
-                  {cubicle.capacity === 1 ? 'persona' : 'personas'}
-                </p>
-              ) : null}
             </div>
+
             {isFinished ? (
               <span className="font-praxis shrink-0 rounded-full bg-uach-purple-900/8 px-3 py-1 text-xs font-semibold text-uach-purple-900/55">
                 Finalizada
@@ -132,7 +118,8 @@ export function MisReservaCard({ reservation, variant, onUpdated }) {
             ) : (
               <span
                 className={`font-praxis shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-                  BADGE_STYLES[displayState] ?? 'bg-uach-purple-900/8 text-uach-purple-900/55'
+                  BADGE_STYLES[displayState] ??
+                  'bg-uach-purple-900/8 text-uach-purple-900/55'
                 }`}
               >
                 {displayLabel}
@@ -144,9 +131,12 @@ export function MisReservaCard({ reservation, variant, onUpdated }) {
             <div>
               <dt className="sr-only">Fecha</dt>
               <dd className="capitalize">
-                {formatReservationDateLabel(reservation.reservationDate)}
+                {formatReservationDateLabel(
+                  reservation.reservationDate,
+                )}
               </dd>
             </div>
+
             <div>
               <dt className="sr-only">Horario</dt>
               <dd>
@@ -154,10 +144,15 @@ export function MisReservaCard({ reservation, variant, onUpdated }) {
                 {formatTimeForDisplay(reservation.endTime)}
               </dd>
             </div>
+
             {hasCheckedIn(reservation) ? (
               <div>
-                <dt className="text-uach-purple-900/55">Check-in</dt>
-                <dd>{formatCheckTimestamp(reservation.checkedInAt)}</dd>
+                <dt className="text-uach-purple-900/55">
+                  Check-in
+                </dt>
+                <dd>
+                  {formatCheckTimestamp(reservation.checkedInAt)}
+                </dd>
               </div>
             ) : null}
           </dl>
@@ -172,7 +167,9 @@ export function MisReservaCard({ reservation, variant, onUpdated }) {
           ) : null}
 
           {showCheckIn ? (
-            <CheckInWindowCountdown onCheckIn={handleOpenCheckIn} />
+            <CheckInWindowCountdown
+              onCheckIn={handleOpenCheckIn}
+            />
           ) : null}
 
           {canCancel ? (
@@ -182,7 +179,9 @@ export function MisReservaCard({ reservation, variant, onUpdated }) {
               disabled={isCancelling}
               className="font-praxis w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
-              {isCancelling ? 'Cancelando…' : 'Cancelar reserva'}
+              {isCancelling
+                ? 'Cancelando…'
+                : 'Cancelar reserva'}
             </button>
           ) : null}
 
@@ -195,29 +194,39 @@ export function MisReservaCard({ reservation, variant, onUpdated }) {
                 hour: '2-digit',
                 minute: '2-digit',
               })}{' '}
-              ({CANCELLATION_MIN_HOURS} hora de anticipación). Si no haces check-in antes de que
-              termine tu horario, se aplicará una sanción.
+              ({CANCELLATION_MIN_HOURS} hora de
+              anticipación). Si no haces check-in antes de
+              que termine tu horario, se aplicará una
+              sanción.
             </p>
           ) : null}
 
           {cancelError ? (
-            <p className="font-praxis text-sm text-red-600">{cancelError}</p>
+            <p className="font-praxis text-sm text-red-600">
+              {cancelError}
+            </p>
           ) : null}
 
-          {isPast && reservation.status === 'CANCELLED' && !isReservationSanctioned(reservation) ? (
+          {isPast &&
+          reservation.status === 'CANCELLED' &&
+          !isReservationSanctioned(reservation) ? (
             <p className="font-praxis text-xs text-uach-purple-900/55">
               Reserva cancelada.
             </p>
           ) : null}
 
           {isPast &&
-          (isReservationSanctioned(reservation) || isReservationMissedCheckIn(reservation)) ? (
+          (isReservationSanctioned(reservation) ||
+            isReservationMissedCheckIn(reservation)) ? (
             <p className="font-praxis text-xs text-red-700/80">
-              Se aplicó una sanción (check-in fuera de plazo o incumplimiento de la reserva).
+              Se aplicó una sanción (check-in fuera de
+              plazo o incumplimiento de la reserva).
             </p>
           ) : null}
 
-          {isPast && hasCheckedIn(reservation) ? (
+          {isPast &&
+          hasCheckedIn(reservation) &&
+          !isReservationMissedCheckIn(reservation) ? (
             <p className="font-praxis text-xs text-uach-purple-900/55">
               Reserva finalizada.
             </p>
@@ -225,11 +234,69 @@ export function MisReservaCard({ reservation, variant, onUpdated }) {
 
           {inUse ? (
             <p className="font-praxis text-xs text-uach-purple-900/70">
-              Estás usando el cubículo. Tu sesión termina al finalizar el horario reservado.
+              Estás usando el cubículo. Tu sesión termina
+              al finalizar el horario reservado.
             </p>
           ) : null}
         </div>
       </div>
     </article>
-  )
+
+    {showCancelDialog ? (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-uach-purple-950/60 p-4 backdrop-blur-sm"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="cancel-dialog-title"
+      >
+        <div className="w-full max-w-sm rounded-2xl border border-uach-purple-900/15 bg-white p-6 shadow-xl">
+          <h2
+            id="cancel-dialog-title"
+            className="font-alverata text-lg font-semibold text-uach-purple-900"
+          >
+            ¿Cancelar reserva?
+          </h2>
+
+          <p className="font-praxis mt-2 text-sm text-uach-purple-900/70">
+            {reservation.cubicleIdentifier ??
+              `Cubículo #${reservation.cubicleId}`}
+            {' · '}
+            {formatReservationDateLabel(
+              reservation.reservationDate,
+            )}
+            {', '}
+            {formatTimeForDisplay(
+              reservation.startTime,
+            )}–{formatTimeForDisplay(reservation.endTime)}
+          </p>
+
+          <p className="font-praxis mt-3 text-sm text-uach-purple-900/60">
+            Esta acción no se puede deshacer. Solo puedes
+            cancelar con al menos{' '}
+            {CANCELLATION_MIN_HOURS} hora de
+            anticipación.
+          </p>
+
+          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => setShowCancelDialog(false)}
+              className="font-praxis rounded-xl border border-uach-purple-900/20 px-5 py-2.5 text-sm font-medium text-uach-purple-900 transition hover:bg-uach-purple-50"
+            >
+              Mantener reserva
+            </button>
+
+            <button
+              type="button"
+              onClick={confirmCancel}
+              className="font-praxis rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Sí, cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null}
+  </>
+)
 }

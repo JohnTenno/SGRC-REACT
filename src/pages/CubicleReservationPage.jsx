@@ -1,10 +1,9 @@
-import { useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { CubiculoCard } from '@/components/cards/CubiculoCard'
+import { CubicleCard } from '@/components/cards/CubicleCard'
 import { HeroHeader } from '@/components/layout/HeroHeader'
 import { Navbar } from '@/components/layout/Navbar'
-import { getAvailableSlots } from '@/data/mockCubiculoAvailability'
-import { MOCK_CUBICLES } from '@/data/mockCubiculos'
+import { getAuthSession } from '@/lib/authSession'
 
 const todayIso = new Date().toISOString().slice(0, 10)
 
@@ -14,21 +13,34 @@ const todayLabel = new Date(`${todayIso}T12:00:00`).toLocaleDateString('es-MX', 
   month: 'long',
 })
 
-export function ReservaCubiculoPage() {
+export function CubicleReservationPage() {
   const navigate = useNavigate()
+  const [cubicles, setCubicles] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
   const [selectedCubicleId, setSelectedCubicleId] = useState(null)
   const [fieldErrors, setFieldErrors] = useState({})
 
-  const selectedCubicle = MOCK_CUBICLES.find((c) => c.id === selectedCubicleId)
+  const selectedCubicle = cubicles.find((c) => c.id === selectedCubicleId)
+
+  useEffect(() => {
+    const session = getAuthSession()
+    fetch('/api/cubicles', {
+      headers: session?.token ? { Authorization: `Bearer ${session.token}` } : {},
+    })
+      .then((r) => r.json())
+      .then((data) => setCubicles(Array.isArray(data) ? data : []))
+      .catch(() => setLoadError('No se pudieron cargar los cubículos. Intenta de nuevo.'))
+      .finally(() => setIsLoading(false))
+  }, [])
 
   function handleContinue() {
     if (!selectedCubicleId) {
       setFieldErrors({ cubicle: 'Selecciona un cubículo para continuar.' })
       return
     }
-
     setFieldErrors({})
-    navigate(`/reserva-de-cubiculo/${selectedCubicleId}`)
+    navigate(`/cubicle-reservation/${selectedCubicleId}`)
   }
 
   return (
@@ -36,23 +48,19 @@ export function ReservaCubiculoPage() {
       <Navbar />
 
       <main className="flex flex-1 flex-col gap-8 bg-white">
-        <div className="reserva-cubiculo-hero">
+        <div className="cubicle-reservation-hero">
           <HeroHeader
             title="Reserva de cubículos"
             description="Elige el cubículo que deseas reservar en la biblioteca."
           />
         </div>
 
-        <div
-          className={`page-shell flex flex-1 flex-col ${selectedCubicleId ? 'pb-28' : 'pb-8'}`}
-        >
+        <div className={`page-shell flex flex-1 flex-col ${selectedCubicleId ? 'pb-28' : 'pb-8'}`}>
           <nav className="font-praxis mb-6 text-sm text-uach-purple-900/60" aria-label="Ruta">
             <Link to="/home" className="transition hover:text-uach-purple-900">
               Inicio
             </Link>
-            <span className="mx-2" aria-hidden="true">
-              /
-            </span>
+            <span className="mx-2" aria-hidden="true">/</span>
             <span className="text-uach-purple-900">Reserva de cubículos</span>
           </nav>
 
@@ -69,27 +77,34 @@ export function ReservaCubiculoPage() {
                 <p className="font-praxis mt-3 text-sm text-red-600">{fieldErrors.cubicle}</p>
               ) : null}
 
-              <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {MOCK_CUBICLES.map((cubicle) => (
-                  <li key={cubicle.id} className="flex">
-                    <CubiculoCard
-                      name={cubicle.name}
-                      capacity={cubicle.capacity}
-                      availableTimes={getAvailableSlots(cubicle.id, todayIso)}
-                      availabilityDayLabel={todayLabel}
-                      image={cubicle.image}
-                      imageAlt={cubicle.imageAlt}
-                      selected={selectedCubicleId === cubicle.id}
-                      onSelect={() => {
-                        setSelectedCubicleId((current) =>
-                          current === cubicle.id ? null : cubicle.id,
-                        )
-                        setFieldErrors({})
-                      }}
-                    />
-                  </li>
-                ))}
-              </ul>
+              {isLoading ? (
+                <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2, 3].map((n) => (
+                    <li key={n} className="h-56 animate-pulse rounded-xl bg-uach-purple-900/8" />
+                  ))}
+                </ul>
+              ) : loadError ? (
+                <p className="font-praxis mt-6 text-sm text-red-600">{loadError}</p>
+              ) : (
+                <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {cubicles.map((cubicle) => (
+                    <li key={cubicle.id} className="flex">
+                      <CubicleCard
+                        name={cubicle.identifier}
+                        capacity={cubicle.capacity}
+                        availabilityDayLabel={todayLabel}
+                        selected={selectedCubicleId === cubicle.id}
+                        onSelect={() => {
+                          setSelectedCubicleId((current) =>
+                            current === cubicle.id ? null : cubicle.id,
+                          )
+                          setFieldErrors({})
+                        }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <Link
@@ -111,7 +126,7 @@ export function ReservaCubiculoPage() {
               <p className="font-praxis text-sm text-uach-purple-900/80">
                 Cubículo seleccionado:{' '}
                 <span className="font-alverata font-semibold text-uach-purple-900">
-                  {selectedCubicle.name}
+                  {selectedCubicle.identifier}
                 </span>
               </p>
               <button

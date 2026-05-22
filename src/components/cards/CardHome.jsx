@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import imgCubiculos from '@/assets/images/img-1.webp'
 import imgEquipo from '@/assets/images/img-2.webp'
 import imgTutorias from '@/assets/images/img-5.webp'
@@ -11,7 +11,7 @@ const homeServices = [
       'Consulta disponibilidad en la biblioteca y aparta un espacio de estudio por horario sin traslapes.',
     image: imgCubiculos,
     imageAlt: 'Espacios de estudio y cubículos en biblioteca',
-    href: '/reserva-de-cubiculo',
+    href: '/cubicle-reservation',
   },
   {
     id: 'equipo',
@@ -20,7 +20,7 @@ const homeServices = [
       'Solicita laptops, proyectores y material de apoyo con seguimiento de entrega y devolución.',
     image: imgEquipo,
     imageAlt: 'Equipo y recursos tecnológicos universitarios',
-    href: '/renta-de-equipo',
+    href: '/equipment-rental',
   },
   {
     id: 'tutorias',

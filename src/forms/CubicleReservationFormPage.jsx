@@ -1,21 +1,15 @@
-import { useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { FailAnimation } from '@/components/animations/FailAnimation'
-import { SuccessAnimation } from '@/components/animations/SuccessAnimation'
 import { HeroHeader } from '@/components/layout/HeroHeader'
 import { Navbar } from '@/components/layout/Navbar'
 import { ReservationCalendar } from '@/components/reservation/ReservationCalendar'
 import { ReservationTimePicker } from '@/components/reservation/ReservationTimePicker'
-import { getCubiculoById } from '@/data/mockCubiculos'
-import {
-  getOccupiedSlots,
-  isReservationRangeAvailable,
-} from '@/data/mockCubiculoAvailability'
 import {
   MAX_CUBICLE_RESERVATION_HOURS,
   RESERVATION_TIME_OPTIONS,
   buildCubicleReservationBody,
   createCubicleReservation,
+  fetchCubicleOccupiedSlots,
   isWithinMaxReservationDuration,
 } from '@/lib/cubicleReservationApi'
 
@@ -40,14 +34,15 @@ function formatDateLabel(isoDate) {
   })
 }
 
-function validateForm({
-  cubicleId,
-  reservationDate,
-  startTime,
-  endTime,
-  minDate,
-  maxDate,
-}) {
+function isRangeAvailable(occupiedSlots, startTime, endTime) {
+  const startIdx = RESERVATION_TIME_OPTIONS.indexOf(startTime)
+  const endIdx = RESERVATION_TIME_OPTIONS.indexOf(endTime)
+  if (startIdx === -1 || endIdx === -1) return false
+  const range = RESERVATION_TIME_OPTIONS.slice(startIdx, endIdx)
+  return range.every((hour) => !occupiedSlots.has(hour))
+}
+
+function validateForm({ cubicleId, reservationDate, startTime, endTime, minDate, maxDate, occupiedSlots }) {
   const errors = {}
 
   if (!reservationDate) {
@@ -56,90 +51,88 @@ function validateForm({
     errors.reservationDate = 'La fecha no está dentro del rango permitido.'
   }
 
-  if (!startTime) {
-    errors.startTime = 'Selecciona la hora de inicio.'
-  }
+  if (!startTime) errors.startTime = 'Selecciona la hora de inicio.'
+  if (!endTime) errors.endTime = 'Selecciona la hora de fin.'
 
-  if (!endTime) {
-    errors.endTime = 'Selecciona la hora de fin.'
-  }
-
-  if (
-    startTime &&
-    endTime &&
-    RESERVATION_TIME_OPTIONS.indexOf(endTime) <= RESERVATION_TIME_OPTIONS.indexOf(startTime)
-  ) {
+  if (startTime && endTime &&
+    RESERVATION_TIME_OPTIONS.indexOf(endTime) <= RESERVATION_TIME_OPTIONS.indexOf(startTime)) {
     errors.endTime = 'La hora de fin debe ser posterior a la de inicio.'
   }
 
-  if (
-    startTime &&
-    endTime &&
-    !isWithinMaxReservationDuration(startTime, endTime)
-  ) {
+  if (startTime && endTime && !isWithinMaxReservationDuration(startTime, endTime)) {
     errors.endTime = `La reserva no puede exceder ${MAX_CUBICLE_RESERVATION_HOURS} horas.`
   }
 
-  if (
-    startTime &&
-    endTime &&
-    !isReservationRangeAvailable(cubicleId, reservationDate, startTime, endTime)
-  ) {
+  if (startTime && endTime && occupiedSlots && !isRangeAvailable(occupiedSlots, startTime, endTime)) {
     errors.endTime = 'Ese horario incluye bloques ocupados. Elige otro rango.'
   }
 
   return errors
 }
 
-function isFormReady({ cubicleId, reservationDate, startTime, endTime, minDate, maxDate }) {
-  return Object.keys(
-    validateForm({ cubicleId, reservationDate, startTime, endTime, minDate, maxDate }),
-  ).length === 0
-}
-
 function resolveInitialDate(stateDate, minDate, maxDate) {
-  if (typeof stateDate === 'string' && stateDate >= minDate && stateDate <= maxDate) {
-    return stateDate
-  }
+  if (typeof stateDate === 'string' && stateDate >= minDate && stateDate <= maxDate) return stateDate
   return minDate
 }
 
-export function ReservaCubiculoFormPage() {
+export function CubicleReservationFormPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const cubicle = getCubiculoById(id)
 
   const minDate = todayIso()
   const maxDate = addDays(minDate, 14)
 
+  const [cubicle, setCubicle] = useState(null)
+  const [cubicleLoading, setCubicleLoading] = useState(true)
+  const [cubicleError, setCubicleError] = useState(null)
+
   const [reservationDate, setReservationDate] = useState(() =>
     resolveInitialDate(location.state?.reservationDate, minDate, maxDate),
   )
+  const [occupiedSlots, setOccupiedSlots] = useState(new Set())
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const [createdReservationId, setCreatedReservationId] = useState(null)
-  const [failMessage, setFailMessage] = useState(null)
+  const [formError, setFormError] = useState(null)
+
+  useEffect(() => {
+    fetch(`/api/cubicles/${id}`)
+      .then((r) => {
+        if (!r.ok) throw new Error('not found')
+        return r.json()
+      })
+      .then(setCubicle)
+      .catch(() => setCubicleError('Cubículo no encontrado.'))
+      .finally(() => setCubicleLoading(false))
+  }, [id])
+
+  useEffect(() => {
+    if (!cubicle) return
+    fetchCubicleOccupiedSlots(cubicle.id, reservationDate).then((slots) => {
+      const next = new Set(slots)
+      setOccupiedSlots(next)
+      setStartTime((prev) => {
+        if (prev && next.has(prev)) {
+          setEndTime('')
+          return ''
+        }
+        return prev
+      })
+      setEndTime((prev) => (prev && next.has(prev) ? '' : prev))
+    })
+  }, [cubicle, reservationDate])
 
   const cubicleId = cubicle?.id ?? 0
 
-  const occupiedSlots = useMemo(
-    () => new Set(getOccupiedSlots(cubicleId, reservationDate)),
-    [cubicleId, reservationDate],
-  )
-
   const availableStartOptions = useMemo(
-    () =>
-      RESERVATION_TIME_OPTIONS.slice(0, -1).filter((slot) => !occupiedSlots.has(slot)),
+    () => RESERVATION_TIME_OPTIONS.slice(0, -1).filter((slot) => !occupiedSlots.has(slot)),
     [occupiedSlots],
   )
 
   const availableEndOptions = useMemo(() => {
     if (!startTime) return []
-
     const startIdx = RESERVATION_TIME_OPTIONS.indexOf(startTime)
     return RESERVATION_TIME_OPTIONS.filter((slot, slotIdx) => {
       if (slotIdx <= startIdx) return false
@@ -151,32 +144,30 @@ export function ReservaCubiculoFormPage() {
 
   const formReady = useMemo(
     () =>
-      isFormReady({
-        cubicleId,
-        reservationDate,
-        startTime,
-        endTime,
-        minDate,
-        maxDate,
-      }),
-    [cubicleId, reservationDate, startTime, endTime, minDate, maxDate],
+      Object.keys(
+        validateForm({ cubicleId, reservationDate, startTime, endTime, minDate, maxDate, occupiedSlots }),
+      ).length === 0,
+    [cubicleId, reservationDate, startTime, endTime, minDate, maxDate, occupiedSlots],
   )
 
-  if (!cubicle) {
-    return <Navigate to="/reserva-de-cubiculo" replace />
+  if (cubicleLoading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-white">
+        <Navbar />
+        <div className="flex flex-1 items-center justify-center">
+          <p className="font-praxis text-uach-purple-900/60">Cargando…</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (cubicleError || !cubicle) {
+    return <Navigate to="/cubicle-reservation" replace />
   }
 
   function handleDateChange(value) {
     setReservationDate(value)
     setFieldErrors((prev) => ({ ...prev, reservationDate: undefined }))
-
-    const nextOccupied = new Set(getOccupiedSlots(cubicleId, value))
-    if (startTime && nextOccupied.has(startTime)) {
-      setStartTime('')
-      setEndTime('')
-    } else if (endTime && nextOccupied.has(endTime)) {
-      setEndTime('')
-    }
   }
 
   function handleStartTimeChange(value) {
@@ -207,40 +198,26 @@ export function ReservaCubiculoFormPage() {
   async function handleSubmit(event) {
     event.preventDefault()
 
-    const errors = validateForm({
-      cubicleId,
-      reservationDate,
-      startTime,
-      endTime,
-      minDate,
-      maxDate,
-    })
-
+    const errors = validateForm({ cubicleId, reservationDate, startTime, endTime, minDate, maxDate, occupiedSlots })
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
       return
     }
 
     setFieldErrors({})
-    setFailMessage(null)
+    setFormError(null)
     setIsSubmitting(true)
 
     try {
-      const body = buildCubicleReservationBody({
-        cubicleId,
-        reservationDate,
-        startTime,
-        endTime,
-      })
-      const created = await createCubicleReservation(body)
-      setCreatedReservationId(created.id)
-      setShowSuccess(true)
+      const body = buildCubicleReservationBody({ cubicleId, date: reservationDate, startTime, endTime })
+      await createCubicleReservation(body)
+      navigate('/my-reservations', { replace: true })
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : error?.message ?? 'No se pudo completar la reserva. Intenta de nuevo.'
-      setFailMessage(message)
+      setFormError(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -250,64 +227,28 @@ export function ReservaCubiculoFormPage() {
     <div className="flex min-h-screen flex-col bg-white">
       <Navbar />
 
-      {showSuccess ? (
-        <SuccessAnimation
-          title="¡Gracias por su reserva!"
-          message={
-            createdReservationId
-              ? `Reserva guardada (ID ${createdReservationId}). No olvide hacer check-in escaneando el QR en la entrada del cubículo antes de que termine su horario.`
-              : 'No olvide hacer check-in escaneando el QR en la entrada del cubículo antes de que termine su horario reservado.'
-          }
-          duration={6000}
-          onComplete={() => {
-            setShowSuccess(false)
-            setCreatedReservationId(null)
-            navigate('/mis-reservas')
-          }}
-        />
-      ) : null}
-
-      {failMessage ? (
-        <FailAnimation
-          title="No se pudo reservar"
-          message={failMessage}
-          onClose={() => setFailMessage(null)}
-        />
-      ) : null}
-
       <main className="flex flex-1 flex-col gap-8 bg-white">
-        <div className="reserva-cubiculo-hero">
+        <div className="cubicle-reservation-hero">
           <HeroHeader
-            title={cubicle.name}
-            description={cubicle.description}
-            image={cubicle.image}
-            imageAlt={cubicle.imageAlt}
+            title={cubicle.identifier}
             capacity={cubicle.capacity}
           />
         </div>
 
-        <div
-          className={`page-shell flex flex-1 flex-col ${formReady ? 'pb-28' : 'pb-8'}`}
-        >
+        <div className={`page-shell flex flex-1 flex-col ${formReady ? 'pb-28' : 'pb-8'}`}>
           <nav className="font-praxis mb-6 text-sm text-uach-purple-900/60" aria-label="Ruta">
-            <Link to="/home" className="transition hover:text-uach-purple-900">
-              Inicio
-            </Link>
-            <span className="mx-2" aria-hidden="true">
-              /
-            </span>
-            <Link to="/reserva-de-cubiculo" className="transition hover:text-uach-purple-900">
+            <Link to="/home" className="transition hover:text-uach-purple-900">Inicio</Link>
+            <span className="mx-2" aria-hidden="true">/</span>
+            <Link to="/cubicle-reservation" className="transition hover:text-uach-purple-900">
               Reserva de cubículos
             </Link>
-            <span className="mx-2" aria-hidden="true">
-              /
-            </span>
-            <span className="text-uach-purple-900">{cubicle.name}</span>
+            <span className="mx-2" aria-hidden="true">/</span>
+            <span className="text-uach-purple-900">{cubicle.identifier}</span>
           </nav>
 
           <div className="mx-auto w-full max-w-6xl">
             <form
-              id="reserva-cubiculo-form"
+              id="cubicle-reservation-form"
               onSubmit={handleSubmit}
               noValidate
               className="flex flex-col gap-6"
@@ -319,8 +260,8 @@ export function ReservaCubiculoFormPage() {
                   Datos de la reserva
                 </h2>
                 <p className="font-praxis mt-1 text-sm text-uach-purple-900/65">
-                  Elige fecha y horario (máximo {MAX_CUBICLE_RESERVATION_HOURS} horas por
-                  reserva). Los bloques ocupados no se pueden seleccionar.
+                  Elige fecha y horario (máximo {MAX_CUBICLE_RESERVATION_HOURS} horas por reserva).
+                  Los bloques ocupados no se pueden seleccionar.
                 </p>
 
                 <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
@@ -334,9 +275,7 @@ export function ReservaCubiculoFormPage() {
                       disabled={isSubmitting}
                     />
                     {fieldErrors.reservationDate ? (
-                      <p className="font-praxis text-sm text-red-600">
-                        {fieldErrors.reservationDate}
-                      </p>
+                      <p className="font-praxis text-sm text-red-600">{fieldErrors.reservationDate}</p>
                     ) : null}
                   </div>
 
@@ -350,9 +289,7 @@ export function ReservaCubiculoFormPage() {
                       emptyHint="No hay horarios de inicio libres este día."
                     />
                     {fieldErrors.startTime ? (
-                      <p className="font-praxis -mt-6 text-sm text-red-600">
-                        {fieldErrors.startTime}
-                      </p>
+                      <p className="font-praxis -mt-6 text-sm text-red-600">{fieldErrors.startTime}</p>
                     ) : null}
 
                     <ReservationTimePicker
@@ -371,16 +308,20 @@ export function ReservaCubiculoFormPage() {
                       }
                     />
                     {fieldErrors.endTime ? (
-                      <p className="font-praxis -mt-6 text-sm text-red-600">
-                        {fieldErrors.endTime}
-                      </p>
+                      <p className="font-praxis -mt-6 text-sm text-red-600">{fieldErrors.endTime}</p>
                     ) : null}
                   </div>
                 </div>
               </section>
 
+              {formError ? (
+                <p className="font-praxis rounded-lg border border-red-400/40 bg-red-950/10 px-4 py-3 text-sm text-red-700">
+                  {formError}
+                </p>
+              ) : null}
+
               <Link
-                to="/reserva-de-cubiculo"
+                to="/cubicle-reservation"
                 className="font-praxis inline-block text-sm text-uach-purple-900/70 transition hover:text-uach-purple-900"
               >
                 Cambiar cubículo
@@ -406,7 +347,7 @@ export function ReservaCubiculoFormPage() {
             </p>
             <button
               type="submit"
-              form="reserva-cubiculo-form"
+              form="cubicle-reservation-form"
               disabled={isSubmitting}
               className="button-primary w-full shrink-0 sm:w-auto sm:min-w-[14rem]"
             >

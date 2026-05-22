@@ -10,7 +10,7 @@
  * @param {boolean} [props.disabled]
  * @param {() => void} props.onSelect
  */
-export function CubiculoCard({
+export function CubicleCard({
   name,
   image,
   imageAlt,

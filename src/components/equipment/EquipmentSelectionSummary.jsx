@@ -1,5 +1,5 @@
 /**
- * @typedef {import('@/data/mockEquioment').MockEquioment & { quantity: number }} SelectedEquipmentLine
+ * @typedef {import('@/data/mockEquipment').MockEquipment & { quantity: number }} SelectedEquipmentLine
  */
 
 /**
@@ -8,7 +8,7 @@
  * @param {(id: number) => void} props.onRemove
  * @param {(id: number, quantity: number) => void} props.onQuantityChange
  */
-export function EquipoSelectionSummary({ items, onRemove, onQuantityChange }) {
+export function EquipmentSelectionSummary({ items, onRemove, onQuantityChange }) {
   if (items.length === 0) return null
 
   const totalUnits = items.reduce((sum, item) => sum + item.quantity, 0)

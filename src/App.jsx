@@ -1,30 +1,33 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+﻿import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { HomePage } from '@/pages/HomePage'
 import { LoginPage } from '@/pages/LoginPage'
 import { CheckInPage } from '@/pages/CheckInPage'
 import { LobbyCheckInQrPage } from '@/pages/LobbyCheckInQrPage'
-import { MisReservasPages } from '@/pages/MisReservasPages'
-import { RentaEquipoOrdenPage } from '@/pages/RentaEquipoOrdenPage'
-import { RentaEquipoPage } from '@/pages/RentaEquipoPage'
-import { ReservaCubiculoFormPage } from '@/forms/ReservaCubiculoFormPage'
-import { ReservaCubiculoPage } from '@/pages/ReservaCubiculoPage'
+import { MyReservationsPage } from '@/pages/MyReservationsPage'
+import { EquipmentRentalOrderPage } from '@/pages/EquipmentRentalOrderPage'
+import { EquipmentRentalPage } from '@/pages/EquipmentRentalPage'
+import { CubicleReservationFormPage } from '@/forms/CubicleReservationFormPage'
+import { CubicleReservationPage } from '@/pages/CubicleReservationPage'
 
 function App() {
   return (
     <BrowserRouter>
+      <ErrorBoundary>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/home" element={<HomePage />} />
-        <Route path="/mis-reservas" element={<MisReservasPages />} />
+        <Route path="/my-reservations" element={<MyReservationsPage />} />
         <Route path="/check-in/:id" element={<CheckInPage />} />
-        <Route path="/entrada/:cubicleId" element={<LobbyCheckInQrPage />} />
-        <Route path="/reserva-de-cubiculo" element={<ReservaCubiculoPage />} />
-        <Route path="/reserva-de-cubiculo/:id" element={<ReservaCubiculoFormPage />} />
-        <Route path="/renta-de-equipo" element={<RentaEquipoPage />} />
-        <Route path="/renta-de-equipo/orden" element={<RentaEquipoOrdenPage />} />
+        <Route path="/lobby/:cubicleId" element={<LobbyCheckInQrPage />} />
+        <Route path="/cubicle-reservation" element={<CubicleReservationPage />} />
+        <Route path="/cubicle-reservation/:id" element={<CubicleReservationFormPage />} />
+        <Route path="/equipment-rental" element={<EquipmentRentalPage />} />
+        <Route path="/equipment-rental/order" element={<EquipmentRentalOrderPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   )
 }
