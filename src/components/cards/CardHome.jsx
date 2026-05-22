@@ -29,7 +29,7 @@ const homeServices = [
       'Agenda sesiones de tutoría impartidas por docentes y confirma tu asistencia desde el mismo sistema.',
     image: imgTutorias,
     imageAlt: 'Sesión de tutoría académica en campus',
-    href: '#',
+    href: '/professor-tutoring',
   },
 ]
 

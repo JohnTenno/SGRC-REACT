@@ -9,6 +9,7 @@ import { EquipmentRentalOrderPage } from '@/pages/EquipmentRentalOrderPage'
 import { EquipmentRentalPage } from '@/pages/EquipmentRentalPage'
 import { CubicleReservationFormPage } from '@/forms/CubicleReservationFormPage'
 import { CubicleReservationPage } from '@/pages/CubicleReservationPage'
+import { ProfessorTutoringPage } from '@/pages/ProfessorTutoringPage'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/cubicle-reservation/:id" element={<CubicleReservationFormPage />} />
         <Route path="/equipment-rental" element={<EquipmentRentalPage />} />
         <Route path="/equipment-rental/order" element={<EquipmentRentalOrderPage />} />
+        <Route path="/professor-tutoring" element={<ProfessorTutoringPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
       </ErrorBoundary>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LoginImageCarousel } from '@/components/auth/LoginImageCarousel'
 import { saveAuthSession } from '@/lib/authSession'
@@ -49,8 +49,48 @@ function validate({ enrollment, password }) {
   return errors
 }
 
-function inputClass(hasError) {
-  return `input-field ${hasError ? 'border-red-400 focus:border-red-400 focus:ring-red-400/30' : ''}`
+function inputClass(hasError, extra = '') {
+  return `input-field ${extra} ${hasError ? 'border-red-400 focus:border-red-400 focus:ring-red-400/30' : ''}`
+}
+
+const loginBackdropPurple = '#1e0f3a'
+
+function EyeIcon() {
+  return (
+    <svg
+      className="size-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function EyeOffIcon() {
+  return (
+    <svg
+      className="size-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+      <path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+      <line x1="2" x2="22" y1="2" y2="22" />
+    </svg>
+  )
 }
 
 export function LoginPage() {
@@ -60,6 +100,18 @@ export function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState({})
   const [formError, setFormError] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+
+  useEffect(() => {
+    const prevHtml = document.documentElement.style.backgroundColor
+    const prevBody = document.body.style.backgroundColor
+    document.documentElement.style.backgroundColor = loginBackdropPurple
+    document.body.style.backgroundColor = loginBackdropPurple
+    return () => {
+      document.documentElement.style.backgroundColor = prevHtml
+      document.body.style.backgroundColor = prevBody
+    }
+  }, [])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -92,6 +144,10 @@ export function LoginPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-uach-purple-950">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 bg-uach-purple-950"
+      />
       <main className="relative z-10 flex min-h-screen flex-col lg:flex-row">
         <LoginImageCarousel className="hidden shrink-0 lg:block lg:min-h-screen lg:w-1/2" />
 
@@ -152,23 +208,35 @@ export function LoginPage() {
                 <label htmlFor="password" className={labelClass}>
                   Contraseña
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="Contraseña de acceso"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value)
-                    setFieldErrors((prev) => ({ ...prev, password: undefined }))
-                    setFormError(null)
-                  }}
-                  disabled={isSubmitting}
-                  aria-invalid={Boolean(fieldErrors.password)}
-                  aria-describedby={fieldErrors.password ? 'password-error' : undefined}
-                  className={inputClass(Boolean(fieldErrors.password))}
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    placeholder="Contraseña de acceso"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      setFieldErrors((prev) => ({ ...prev, password: undefined }))
+                      setFormError(null)
+                    }}
+                    disabled={isSubmitting}
+                    aria-invalid={Boolean(fieldErrors.password)}
+                    aria-describedby={fieldErrors.password ? 'password-error' : undefined}
+                    className={inputClass(Boolean(fieldErrors.password), 'pr-12')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    disabled={isSubmitting}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 rounded-md p-1 text-white/55 transition hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400/60 disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                  </button>
+                </div>
                 {fieldErrors.password ? (
                   <p id="password-error" className="font-praxis text-sm text-red-300">
                     {fieldErrors.password}
