@@ -1,4 +1,7 @@
-import { createMockTutoringRequest } from '@/data/mockTutoringRequests'
+import {
+  createMockTutoringRequest,
+  getMockTutoringRequests,
+} from '@/data/mockTutoringRequests'
 import {
   formatTimeToBackend,
   RESERVATION_TIME_OPTIONS,
@@ -58,6 +61,11 @@ export async function submitTutoringRequest(fields) {
   await new Promise((resolve) => setTimeout(resolve, 600))
 
   return createMockTutoringRequest(payload)
+}
+
+export async function fetchMyTutoringRequests() {
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  return getMockTutoringRequests()
 }
 
 export function validateTutoringRequest(fields) {

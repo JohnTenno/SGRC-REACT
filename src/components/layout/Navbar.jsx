@@ -1,10 +1,25 @@
-﻿import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+﻿import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { clearAuthSession, getAuthSession } from '@/lib/authSession'
 import escudoUach from '@/assets/escudo-color.png'
 
-const misReservasLinkClass =
-  'font-praxis block rounded-md px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400'
+const NAV_LINKS = [
+  { to: '/home', label: 'Inicio', icon: 'home', end: true },
+  { to: '/cubicle-reservation', label: 'Cubículos', icon: 'cubicle', prefix: '/cubicle-reservation' },
+  { to: '/equipment-rental', label: 'Equipo', icon: 'equipment', prefix: '/equipment-rental' },
+  { to: '/professor-tutoring', label: 'Tutorías', icon: 'tutoring', prefix: '/professor-tutoring' },
+  { to: '/my-tutorings', label: 'Mis tutorías', icon: 'my-tutorings', end: true },
+  { to: '/my-reservations', label: 'Mis reservas', icon: 'reservations', end: true },
+]
+
+const navLinkClass =
+  'font-praxis inline-flex items-center justify-center gap-2.5 rounded-md px-4 py-3.5 text-base font-medium text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400 lg:text-lg lg:px-5 lg:py-4'
+
+function isNavLinkActive(pathname, { to, end, prefix }) {
+  if (end) return pathname === to
+  if (prefix) return pathname === to || pathname.startsWith(`${prefix}/`)
+  return pathname === to || pathname.startsWith(`${to}/`)
+}
 
 function getInitials(name) {
   return name
@@ -39,14 +54,14 @@ function UserProfileInfo({ user, avatarSize = 'md' }) {
       <div className={`min-w-0 text-left ${!isLarge ? 'md:text-right' : ''}`}>
         <p
           className={`font-alverata font-semibold text-white ${
-            isLarge ? 'text-xl' : 'text-sm sm:text-base'
+            isLarge ? 'text-2xl' : 'text-base sm:text-lg'
           }`}
         >
           {user.name}
         </p>
         <p
           className={`font-praxis text-uach-gold-400/90 ${
-            isLarge ? 'text-lg' : 'text-xs sm:text-sm'
+            isLarge ? 'text-xl' : 'text-sm sm:text-base'
           }`}
         >
           {user.enrollment}
@@ -56,18 +71,101 @@ function UserProfileInfo({ user, avatarSize = 'md' }) {
   )
 }
 
-function MyReservationsLink({ className, onClick }) {
+function NavIcon({ name, large = false }) {
+  const svgProps = {
+    className: large ? 'size-5 shrink-0' : 'size-[1.125rem] shrink-0 lg:size-5',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    'aria-hidden': true,
+  }
+
+  switch (name) {
+    case 'home':
+      return (
+        <svg {...svgProps}>
+          <path d="M3 10.5 12 3l9 7.5" />
+          <path d="M5 9.5V20h14V9.5" />
+        </svg>
+      )
+    case 'cubicle':
+      return (
+        <svg {...svgProps}>
+          <path d="M4 20V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14" />
+          <path d="M4 20h16" />
+          <path d="M9 10h.01M9 14h.01M15 10h.01M15 14h.01" />
+        </svg>
+      )
+    case 'equipment':
+      return (
+        <svg {...svgProps}>
+          <rect x="3" y="5" width="18" height="12" rx="2" />
+          <path d="M8 20h8" />
+        </svg>
+      )
+    case 'tutoring':
+      return (
+        <svg {...svgProps}>
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+          <path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5" />
+        </svg>
+      )
+    case 'my-tutorings':
+      return (
+        <svg {...svgProps}>
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          <path d="M8 7h8M8 11h8" />
+        </svg>
+      )
+    case 'reservations':
+      return (
+        <svg {...svgProps}>
+          <rect x="3" y="5" width="18" height="16" rx="2" />
+          <path d="M16 3v4M8 3v4M3 11h18" />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
+
+function NavbarLink({ to, label, icon, end, prefix, className, onClick, largeIcon = false }) {
+  const { pathname } = useLocation()
+  const active = isNavLinkActive(pathname, { to, end, prefix })
+
   return (
-    <Link to="/my-reservations" className={className} onClick={onClick}>
-      Mis reservas
+    <Link
+      to={to}
+      onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      className={`${navLinkClass}${active ? ' bg-white/10' : ''} ${className ?? ''}`}
+    >
+      <NavIcon name={icon} large={largeIcon} />
+      {label}
     </Link>
   )
 }
 
-function LogoutIcon() {
+function DesktopNavLinks() {
+  return (
+    <ul className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 md:flex lg:gap-1">
+      {NAV_LINKS.map((item) => (
+        <li key={item.to}>
+          <NavbarLink {...item} />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function LogoutIcon({ large = false }) {
   return (
     <svg
-      className="size-4 shrink-0"
+      className={large ? 'size-5 shrink-0' : 'size-[1.125rem] shrink-0 lg:size-5'}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -83,7 +181,7 @@ function LogoutIcon() {
   )
 }
 
-function LogoutButton({ className, onClick }) {
+function LogoutButton({ className, onClick, largeIcon = false }) {
   const navigate = useNavigate()
 
   function handleLogout() {
@@ -96,91 +194,22 @@ function LogoutButton({ className, onClick }) {
     <button
       type="button"
       role="menuitem"
-      className={`inline-flex items-center justify-center gap-2 ${className}`}
+      className={className}
       onClick={handleLogout}
     >
-      <LogoutIcon />
+      <LogoutIcon large={largeIcon} />
       Cerrar sesión
     </button>
   )
 }
 
-function ChevronIcon({ open }) {
-  return (
-    <svg
-      className={`size-4 shrink-0 text-white/80 transition-transform ${open ? 'rotate-180' : ''}`}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <path d="M6 9l6 6 6-6" />
-    </svg>
-  )
-}
-
 function DesktopProfileMenu({ user }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const menuRef = useRef(null)
-
-  useEffect(() => {
-    if (!isOpen) return undefined
-
-    function handleClickOutside(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false)
-      }
-    }
-
-    function handleEscape(event) {
-      if (event.key === 'Escape') setIsOpen(false)
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleEscape)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [isOpen])
-
   return (
-    <div
-      ref={menuRef}
-      className="relative hidden md:inline-flex md:flex-col md:items-stretch"
-    >
-      <button
-        type="button"
-        className={`flex items-center gap-2 rounded-md border px-2 py-1.5 transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400 ${
-          isOpen ? 'border-uach-gold-400/60' : 'border-transparent'
-        }`}
-        aria-expanded={isOpen}
-        aria-haspopup="menu"
-        onClick={() => setIsOpen((open) => !open)}
-      >
+    <div className="hidden shrink-0 flex-col items-stretch gap-2 md:flex">
+      <div className="rounded-md border border-transparent px-2 py-1.5">
         <UserProfileInfo user={user} />
-        <ChevronIcon open={isOpen} />
-      </button>
-
-      {isOpen ? (
-        <div
-          role="menu"
-          className="absolute top-full right-0 left-0 z-50 mt-2 w-full min-w-full overflow-hidden rounded-md border border-uach-gold-400/60 bg-uach-purple-800 py-1 shadow-lg"
-        >
-          <MyReservationsLink
-            role="menuitem"
-            className={`${misReservasLinkClass} text-center`}
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="my-1 border-t border-white/10" role="separator" />
-          <LogoutButton
-            className={`${misReservasLinkClass} w-full text-center`}
-            onClick={() => setIsOpen(false)}
-          />
-        </div>
-      ) : null}
+      </div>
+      <LogoutButton className={navLinkClass} />
     </div>
   )
 }
@@ -231,13 +260,25 @@ function MobileSideMenu({ user, isOpen, onClose }) {
           <UserProfileInfo user={user} avatarSize="lg" />
         </div>
 
-        <div className="flex flex-1 flex-col items-center gap-0 px-6 py-6">
-          <MyReservationsLink
-            className={`${misReservasLinkClass} w-full border-y border-white/10 text-center`}
-            onClick={onClose}
-          />
+        <nav
+          className="flex flex-1 flex-col items-stretch gap-0 overflow-y-auto px-6 py-4"
+          aria-label="Secciones"
+        >
+          {NAV_LINKS.map((item) => (
+            <NavbarLink
+              key={item.to}
+              {...item}
+              largeIcon
+              className="w-full justify-start border-y border-white/10 text-lg py-4"
+              onClick={onClose}
+            />
+          ))}
+        </nav>
+
+        <div className="mt-auto shrink-0 border-t border-white/10 bg-uach-purple-950 px-6 py-5">
           <LogoutButton
-            className={`${misReservasLinkClass} w-full border-b border-white/10 text-center`}
+            largeIcon
+            className={`${navLinkClass} w-full justify-start text-lg py-4`}
             onClick={onClose}
           />
         </div>
@@ -302,7 +343,7 @@ export function Navbar() {
       >
         <Link
           to="/home"
-          className="flex items-center gap-3 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400"
+          className="flex shrink-0 items-center gap-3 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400"
           onClick={() => setIsMenuOpen(false)}
         >
           <img src={escudoUach} alt="Escudo UACh" className="h-9 w-auto" />
@@ -314,18 +355,22 @@ export function Navbar() {
           </span>
         </Link>
 
-        <DesktopProfileMenu user={user} />
+        <DesktopNavLinks />
 
-        <button
-          type="button"
-          className="rounded-md p-2 text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400 md:hidden"
-          aria-expanded={isMenuOpen}
-          aria-controls="navbar-mobile-menu"
-          aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-          onClick={() => setIsMenuOpen((open) => !open)}
-        >
-          <MenuIcon open={isMenuOpen} />
-        </button>
+        <div className="flex items-center gap-2">
+          <DesktopProfileMenu user={user} />
+
+          <button
+            type="button"
+            className="rounded-md p-2 text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400 md:hidden"
+            aria-expanded={isMenuOpen}
+            aria-controls="navbar-mobile-menu"
+            aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            onClick={() => setIsMenuOpen((open) => !open)}
+          >
+            <MenuIcon open={isMenuOpen} />
+          </button>
+        </div>
       </nav>
 
       <MobileSideMenu

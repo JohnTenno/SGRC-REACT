@@ -4,6 +4,7 @@ import { HomePage } from '@/pages/HomePage'
 import { LoginPage } from '@/pages/LoginPage'
 import { CheckInPage } from '@/pages/CheckInPage'
 import { LobbyCheckInQrPage } from '@/pages/LobbyCheckInQrPage'
+import { MyTutoringsPage } from '@/pages/MyTutoringsPage'
 import { MyReservationsPage } from '@/pages/MyReservationsPage'
 import { EquipmentRentalOrderPage } from '@/pages/EquipmentRentalOrderPage'
 import { EquipmentRentalPage } from '@/pages/EquipmentRentalPage'
@@ -22,6 +23,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/my-reservations" element={<MyReservationsPage />} />
+        <Route path="/my-tutorings" element={<MyTutoringsPage />} />
         <Route path="/check-in/:id" element={<CheckInPage />} />
         <Route path="/lobby/:cubicleId" element={<LobbyCheckInQrPage />} />
         <Route path="/cubicle-reservation" element={<CubicleReservationPage />} />

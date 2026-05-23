@@ -7,12 +7,17 @@
  * @property {string} startTime
  * @property {string} endTime
  * @property {string} topic
- * @property {string} [status]
+ * @property {string} status
  * @property {string} [createdAt]
+ * @property {string} [statusUpdatedAt]
+ * @property {string} [rejectionReason]
  */
 
 export const TUTORING_REQUEST_STATUS = {
   PENDING_PROFESSOR: 'PENDING_PROFESSOR',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  COMPLETED: 'COMPLETED',
 }
 
 /** @type {TutoringRequest[]} */
@@ -21,23 +26,49 @@ const initialRequests = [
     id: 1,
     professorId: 1,
     subject: 'Cálculo diferencial',
-    reservationDate: '2026-05-26',
+    reservationDate: '2026-05-28',
     startTime: '10:00:00',
     endTime: '11:00:00',
     topic: 'Repaso de límites y continuidad antes del examen parcial.',
     status: TUTORING_REQUEST_STATUS.PENDING_PROFESSOR,
-    createdAt: '2026-05-20T14:30:00.000Z',
+    createdAt: '2026-05-22T14:30:00.000Z',
   },
   {
     id: 2,
+    professorId: 2,
+    subject: 'Cálculo diferencial',
+    reservationDate: '2026-05-30',
+    startTime: '09:00:00',
+    endTime: '10:00:00',
+    topic: 'Derivadas implícitas y regla de la cadena.',
+    status: TUTORING_REQUEST_STATUS.ACCEPTED,
+    createdAt: '2026-05-20T11:00:00.000Z',
+    statusUpdatedAt: '2026-05-21T16:45:00.000Z',
+  },
+  {
+    id: 3,
     professorId: 3,
     subject: 'Programación orientada a objetos',
     reservationDate: '2026-05-27',
     startTime: '14:00:00',
     endTime: '16:00:00',
     topic: 'Herencia, polimorfismo y diseño de clases en Java.',
-    status: TUTORING_REQUEST_STATUS.PENDING_PROFESSOR,
-    createdAt: '2026-05-21T09:15:00.000Z',
+    status: TUTORING_REQUEST_STATUS.REJECTED,
+    createdAt: '2026-05-19T09:15:00.000Z',
+    statusUpdatedAt: '2026-05-20T08:20:00.000Z',
+    rejectionReason: 'Ya tengo otra asesoría confirmada en ese horario.',
+  },
+  {
+    id: 4,
+    professorId: 1,
+    subject: 'Cálculo diferencial',
+    reservationDate: '2026-05-15',
+    startTime: '11:00:00',
+    endTime: '12:00:00',
+    topic: 'Integrales indefinidas y sustitución simple.',
+    status: TUTORING_REQUEST_STATUS.COMPLETED,
+    createdAt: '2026-05-10T10:00:00.000Z',
+    statusUpdatedAt: '2026-05-11T09:00:00.000Z',
   },
 ]
 

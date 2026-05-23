@@ -50,7 +50,7 @@ export function ProfessorTutoringProfilePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [submittedRequest, setSubmittedRequest] = useState(null)
-  //🤪🥸😳 asi como lo pidion tu senior estricto y mamon de jonh teno 🚀🚀🚀
+  //🤪🥸😳 asi como lo pidion tu senior estricto y mamon de jonh teno 🚀🚀🚀 (ntc jonh JAJAJAJA)
 
   const availableStartSlots = useMemo(() => {
     if (!professor) return []
@@ -152,10 +152,10 @@ export function ProfessorTutoringProfilePage() {
     }
   }
 
-  function handleGoHome() {
+  function handleGoToMyTutorings() {
     setShowSuccess(false)
     setSubmittedRequest(null)
-    navigate('/home', { replace: true })
+    navigate('/my-tutorings', { replace: true })
   }
 
   const displayStart = submittedRequest?.startTime?.slice(0, 5) ?? startTime
@@ -175,13 +175,13 @@ export function ProfessorTutoringProfilePage() {
                 {formatTutoringDateLabel(reservationDate)} de {displayStart} a {displayEnd}.
               </span>
               <span className="mt-3 block">
-                Solo falta que el docente acepte tu solicitud. Revisa tu bandeja de entrada de
-                asesorías para ver el estado y las notificaciones.
+                Solo falta que el docente acepte tu solicitud. Revisa Mis tutorías para ver el
+                estado y las notificaciones.
               </span>
             </>
           }
-          actionLabel="Ir a inicio"
-          onAction={handleGoHome}
+          actionLabel="Ver mis tutorías"
+          onAction={handleGoToMyTutorings}
         />
       ) : null}
 
