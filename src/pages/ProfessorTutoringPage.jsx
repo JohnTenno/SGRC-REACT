@@ -67,6 +67,7 @@ export function ProfessorTutoringPage() {
                       <TutoringSubjectCard
                         name={subject.name}
                         description={subject.description}
+                        to={`/professor-tutoring/${subject.id}`}
                       />
                     </li>
                   ))}

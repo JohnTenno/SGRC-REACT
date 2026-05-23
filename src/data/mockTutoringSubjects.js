@@ -38,3 +38,7 @@ export const MOCK_TUTORING_SUBJECTS = [
     description: 'Matrices, sistemas de ecuaciones, espacios vectoriales y transformaciones.',
   },
 ]
+
+export function getTutoringSubjectById(id) {
+  return MOCK_TUTORING_SUBJECTS.find((subject) => subject.id === id) ?? null
+}

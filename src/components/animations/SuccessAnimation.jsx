@@ -1,20 +1,33 @@
 import { useEffect } from 'react'
 
-/** @param {object} props */
+/**
+ * @param {object} props
+ * @param {import('react').ReactNode} [props.message]
+ * @param {string} [props.actionLabel]
+ * @param {() => void} [props.onAction]
+ */
 export function SuccessAnimation({
   title = '¡Éxito!',
   message = 'La operación se completó correctamente.',
   duration = 1600,
   onComplete,
   onClose,
+  actionLabel,
+  onAction,
 }) {
+  const handleAction = onAction ?? onClose
+  const showActionButton = Boolean(actionLabel && handleAction)
+  const shouldAutoClose = !showActionButton && Boolean(onComplete)
+
   useEffect(() => {
+    if (!shouldAutoClose) return undefined
+
     const timer = setTimeout(() => {
       onComplete?.()
     }, duration)
 
     return () => clearTimeout(timer)
-  }, [duration, onComplete])
+  }, [duration, onComplete, shouldAutoClose])
 
   return (
     <div
@@ -60,13 +73,13 @@ export function SuccessAnimation({
           {message}
         </p>
 
-        {onClose ? (
+        {showActionButton ? (
           <button
             type="button"
-            onClick={onClose}
-            className="font-praxis mt-6 rounded-xl bg-uach-gold-500 px-5 py-2 text-sm font-semibold text-uach-purple-950 transition hover:brightness-105"
+            onClick={handleAction}
+            className="button-primary font-praxis mt-6 w-full sm:w-auto sm:min-w-[12rem]"
           >
-            Continuar
+            {actionLabel}
           </button>
         ) : null}
       </div>

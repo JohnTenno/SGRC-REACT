@@ -9,7 +9,9 @@ import { EquipmentRentalOrderPage } from '@/pages/EquipmentRentalOrderPage'
 import { EquipmentRentalPage } from '@/pages/EquipmentRentalPage'
 import { CubicleReservationFormPage } from '@/forms/CubicleReservationFormPage'
 import { CubicleReservationPage } from '@/pages/CubicleReservationPage'
+import { ProfessorTutoringCatalogPage } from '@/pages/ProfessorTutoringCatalogPage'
 import { ProfessorTutoringPage } from '@/pages/ProfessorTutoringPage'
+import { ProfessorTutoringProfilePage } from '@/pages/ProfessorTutoringProfilePage'
 
 function App() {
   return (
@@ -27,6 +29,11 @@ function App() {
         <Route path="/equipment-rental" element={<EquipmentRentalPage />} />
         <Route path="/equipment-rental/order" element={<EquipmentRentalOrderPage />} />
         <Route path="/professor-tutoring" element={<ProfessorTutoringPage />} />
+        <Route path="/professor-tutoring/:subjectId" element={<ProfessorTutoringCatalogPage />} />
+        <Route
+          path="/professor-tutoring/:subjectId/:professorId"
+          element={<ProfessorTutoringProfilePage />}
+        />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
       </ErrorBoundary>

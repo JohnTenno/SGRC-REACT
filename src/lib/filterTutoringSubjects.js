@@ -1,10 +1,5 @@
 import { MOCK_TUTORING_SUBJECTS } from '@/data/mockTutoringSubjects'
 
-/**
- * @param {object} options
- * @param {string} [options.searchQuery]
- * @param {typeof MOCK_TUTORING_SUBJECTS} [options.items]
- */
 export function filterTutoringSubjects({
   searchQuery = '',
   items = MOCK_TUTORING_SUBJECTS,

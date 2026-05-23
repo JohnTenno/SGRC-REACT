@@ -1,16 +1,17 @@
-/**
- * @param {object} props
- * @param {string} props.value
- * @param {(value: string) => void} props.onChange
- * @param {number} props.resultCount
- * @param {number} props.totalCount
- */
-export function TutoringSubjectSearchBar({ value, onChange, resultCount, totalCount }) {
+export function TutoringSubjectSearchBar({
+  value,
+  onChange,
+  resultCount,
+  totalCount,
+  searchLabel = 'Buscar materia',
+  searchPlaceholder = 'Buscar por nombre o descripción de la materia…',
+  countLabel = 'materias',
+}) {
   return (
     <div className="flex flex-col gap-3">
       <div className="relative min-w-0">
         <label htmlFor="tutoring-subject-search" className="sr-only">
-          Buscar materia
+          {searchLabel}
         </label>
         <span
           className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-uach-purple-900/45"
@@ -23,7 +24,7 @@ export function TutoringSubjectSearchBar({ value, onChange, resultCount, totalCo
           type="search"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          placeholder="Buscar por nombre o descripción de la materia…"
+          placeholder={searchPlaceholder}
           className="font-praxis w-full rounded-lg border border-uach-purple-900/15 bg-white py-3 pr-4 pl-11 text-base text-uach-purple-900 shadow-sm placeholder:text-uach-purple-900/40 focus:border-uach-gold-500/60 focus:outline-none focus:ring-2 focus:ring-uach-gold-400/25"
           autoComplete="off"
         />
@@ -31,8 +32,8 @@ export function TutoringSubjectSearchBar({ value, onChange, resultCount, totalCo
 
       <p className="font-praxis text-sm text-uach-purple-900/65">
         {resultCount === totalCount
-          ? `${totalCount} ${totalCount === 1 ? 'materia' : 'materias'}`
-          : `${resultCount} de ${totalCount} materias`}
+          ? `${totalCount} ${totalCount === 1 ? countLabel.replace(/s$/, '') : countLabel}`
+          : `${resultCount} de ${totalCount} ${countLabel}`}
       </p>
     </div>
   )

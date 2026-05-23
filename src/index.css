@@ -193,32 +193,44 @@
   /** Compact hero — cubicle reservation, equipment rental, professor tutoring */
   .cubicle-reservation-hero header > div,
   .equipment-rental-hero header > div,
-  .professor-tutoring-hero header > div {
+  .professor-tutoring-hero:not(.professor-tutoring-profile-hero) header > div {
     @apply !min-h-[150px] sm:!min-h-[200px] lg:!min-h-[240px];
   }
 
   .cubicle-reservation-hero header > div > .relative.z-10,
   .equipment-rental-hero header > div > .relative.z-10,
-  .professor-tutoring-hero header > div > .relative.z-10 {
+  .professor-tutoring-hero:not(.professor-tutoring-profile-hero) header > div > .relative.z-10 {
     @apply !min-h-[150px] py-6 sm:!min-h-[200px] sm:px-10 lg:!min-h-[240px];
   }
 
   .cubicle-reservation-hero header h1,
   .equipment-rental-hero header h1,
-  .professor-tutoring-hero header h1 {
+  .professor-tutoring-hero:not(.professor-tutoring-profile-hero) header h1 {
     @apply text-2xl sm:text-3xl;
   }
 
   .cubicle-reservation-hero header p,
   .equipment-rental-hero header p,
-  .professor-tutoring-hero header p {
+  .professor-tutoring-hero:not(.professor-tutoring-profile-hero) header p {
     @apply mt-3 text-sm sm:text-base;
   }
 
   .cubicle-reservation-hero header button,
   .equipment-rental-hero header button,
-  .professor-tutoring-hero header button {
+  .professor-tutoring-hero:not(.professor-tutoring-profile-hero) header button {
     @apply hidden;
+  }
+
+  .professor-tutoring-profile-hero header > div {
+    @apply !min-h-[220px] sm:!min-h-[280px] lg:!min-h-[320px];
+  }
+
+  .professor-tutoring-profile-hero header > div > .relative.z-10 {
+    @apply !min-h-[220px] sm:!min-h-[280px] lg:!min-h-[320px];
+  }
+
+  .professor-tutoring-profile-hero header > div > .relative.z-10 > .mx-auto {
+    @apply !items-start sm:!items-center;
   }
 }
 
