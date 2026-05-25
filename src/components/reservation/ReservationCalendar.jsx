@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { IconChevron } from '@/components/icons'
 
 const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
@@ -54,7 +55,7 @@ export function ReservationCalendar({
           aria-label="Mes anterior"
           className="rounded-md p-1.5 text-uach-purple-900 transition hover:bg-uach-purple-50 disabled:pointer-events-none disabled:text-uach-purple-900/25"
         >
-          <ChevronIcon direction="left" />
+          <IconChevron direction="left" />
         </button>
         <p className="font-alverata text-center text-base font-semibold capitalize text-uach-purple-900">
           {monthLabel}
@@ -66,7 +67,7 @@ export function ReservationCalendar({
           aria-label="Mes siguiente"
           className="rounded-md p-1.5 text-uach-purple-900 transition hover:bg-uach-purple-50 disabled:pointer-events-none disabled:text-uach-purple-900/25"
         >
-          <ChevronIcon direction="right" />
+          <IconChevron direction="right" />
         </button>
       </div>
 
@@ -110,22 +111,6 @@ export function ReservationCalendar({
   )
 }
 
-function ChevronIcon({ direction }) {
-  return (
-    <svg
-      className="size-5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.25"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {direction === 'left' ? <path d="M15 18l-6-6 6-6" /> : <path d="M9 18l6-6-6-6" />}
-    </svg>
-  )
-}
 
 /**
  * @param {number} year

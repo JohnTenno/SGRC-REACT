@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { clearAuthSession, getAuthSession } from '@/lib/authSession'
+import { IconClose, IconLogout, IconMenu } from '@/components/icons'
 import { isNavLinkActive, NAV_LINKS, NavIcon } from '@/components/layout/navConfig'
 import escudoUach from '@/assets/escudo-color.png'
 
@@ -86,20 +87,7 @@ function LogoutButton({ className, onClick, largeIcon = false }) {
       onClick={handleLogout}
       aria-label={largeIcon ? undefined : 'Cerrar sesión'}
     >
-      <svg
-        className="size-5 shrink-0"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-        <path d="M16 17l5-5-5-5" />
-        <path d="M21 12H9" />
-      </svg>
+      <IconLogout className="size-5 shrink-0" aria-hidden />
       {largeIcon ? 'Cerrar sesión' : null}
     </button>
   )
@@ -132,18 +120,7 @@ function MobileSideMenu({ user, isOpen, onClose }) {
             aria-label="Cerrar menú"
             onClick={onClose}
           >
-            <svg
-              className="size-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              aria-hidden="true"
-            >
-              <path d="M6 6l12 12" />
-              <path d="M18 6L6 18" />
-            </svg>
+            <IconClose className="size-6" aria-hidden />
           </button>
         </div>
 
@@ -179,29 +156,10 @@ function MobileSideMenu({ user, isOpen, onClose }) {
 }
 
 function MenuIcon({ open }) {
-  return (
-    <svg
-      className="size-6"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      {open ? (
-        <>
-          <path d="M6 6l12 12" />
-          <path d="M18 6L6 18" />
-        </>
-      ) : (
-        <>
-          <path d="M4 7h16" />
-          <path d="M4 12h16" />
-          <path d="M4 17h16" />
-        </>
-      )}
-    </svg>
+  return open ? (
+    <IconClose className="size-6" aria-hidden />
+  ) : (
+    <IconMenu className="size-6" aria-hidden />
   )
 }
 

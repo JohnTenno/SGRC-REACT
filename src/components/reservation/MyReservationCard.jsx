@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CheckInWindowCountdown } from '@/components/reservation/CheckInWindowCountdown'
 import { ReservationCountdown } from '@/components/reservation/ReservationCountdown'
-import { cancelCubicleReservation } from '@/lib/cubicleReservationApi'
+import { cancelCubicleReservation } from '@/cubicles/home/cubicleReservationApi'
 import {
   CANCELLATION_MIN_HOURS,
   canCancelReservation,

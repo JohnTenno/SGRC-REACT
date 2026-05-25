@@ -1,3 +1,4 @@
+import { IconClose } from '@/components/icons'
 import { CheckInQrReader } from '@/components/reservation/CheckInQrReader'
 
 /**
@@ -36,16 +37,7 @@ export function CheckInQrScanner({ reservation, onScanSuccess, onClose, isSubmit
             className="shrink-0 rounded-md p-1 text-uach-purple-900/60 transition hover:bg-uach-purple-50 hover:text-uach-purple-900"
             aria-label="Cerrar escáner"
           >
-            <svg
-              className="size-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
-            >
-              <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
-            </svg>
+            <IconClose className="size-6" aria-hidden />
           </button>
         </div>
 

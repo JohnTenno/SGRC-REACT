@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom'
 import { Navbar } from '@/components/layout/Navbar'
 import { MyReservationCard } from '@/components/reservation/MyReservationCard'
-import { fetchMyCubicleReservations } from '@/lib/cubicleReservationApi'
+import { fetchMyCubicleReservations } from '@/cubicles/home/cubicleReservationApi'
 import { splitReservationsByTimeline } from '@/lib/reservationTimeline'
 
 function ReservationsSection({ title, description, reservations, variant, emptyMessage, onUpdated }) {

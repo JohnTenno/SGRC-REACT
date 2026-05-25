@@ -114,6 +114,11 @@
   #root {
     min-height: 100vh;
   }
+
+  html.dashboard-admin-canvas,
+  body.dashboard-admin-canvas {
+    background-color: var(--color-uach-purple-950);
+  }
 }
 
 @layer components {

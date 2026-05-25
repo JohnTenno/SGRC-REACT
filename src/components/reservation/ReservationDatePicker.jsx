@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { IconChevronLeft, IconChevronRight } from '@/components/icons'
 
 /**
  * @param {object} props
@@ -100,7 +101,7 @@ export function ReservationDatePicker({ value, minDate, maxDate, onChange, disab
             aria-label="Ver fechas anteriores"
             className="text-uach-purple-900 transition hover:text-uach-purple-700 disabled:pointer-events-none disabled:text-uach-purple-900/25"
           >
-            <ChevronLeftIcon />
+            <IconChevronLeft className="size-6" aria-hidden />
           </button>
           <button
             type="button"
@@ -109,45 +110,11 @@ export function ReservationDatePicker({ value, minDate, maxDate, onChange, disab
             aria-label="Ver fechas siguientes"
             className="text-uach-purple-900 transition hover:text-uach-purple-700 disabled:pointer-events-none disabled:text-uach-purple-900/25"
           >
-            <ChevronRightIcon />
+            <IconChevronRight className="size-6" aria-hidden />
           </button>
         </div>
       ) : null}
     </div>
-  )
-}
-
-function ChevronLeftIcon() {
-  return (
-    <svg
-      className="size-6"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.25"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M15 18l-6-6 6-6" />
-    </svg>
-  )
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg
-      className="size-6"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.25"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M9 18l6-6-6-6" />
-    </svg>
   )
 }
 

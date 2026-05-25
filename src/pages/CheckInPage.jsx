@@ -5,7 +5,7 @@ import { FailAnimation } from '@/components/animations/FailAnimation'
 import { Navbar } from '@/components/layout/Navbar'
 import { CheckInQrReader } from '@/components/reservation/CheckInQrReader'
 import { getAuthSession } from '@/lib/authSession'
-import { fetchMyCubicleReservations, performCubicleCheckIn } from '@/lib/cubicleReservationApi'
+import { fetchMyCubicleReservations, performCubicleCheckIn } from '@/cubicles/home/cubicleReservationApi'
 import {
   canPerformCheckIn,
   formatReservationDateLabel,

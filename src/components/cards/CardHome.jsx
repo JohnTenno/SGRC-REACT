@@ -1,48 +1,22 @@
 ﻿import { Link } from 'react-router-dom'
-import imgCubiculos from '@/assets/images/img-1.webp'
-import imgEquipo from '@/assets/images/img-2.webp'
-import imgTutorias from '@/assets/images/img-5.webp'
+import { DASHBOARD_SECTIONS } from '@/dashboard/sections'
 
-const homeServices = [
-  {
-    id: 'cubiculos',
-    title: 'Reserva de cubículos',
-    description:
-      'Consulta disponibilidad en la biblioteca y aparta un espacio de estudio por horario sin traslapes.',
-    image: imgCubiculos,
-    imageAlt: 'Espacios de estudio y cubículos en biblioteca',
-    href: '/cubicle-reservation',
-  },
-  {
-    id: 'equipo',
-    title: 'Renta de equipo universitario',
-    description:
-      'Solicita laptops, proyectores y material de apoyo con seguimiento de entrega y devolución.',
-    image: imgEquipo,
-    imageAlt: 'Equipo y recursos tecnológicos universitarios',
-    href: '/equipment-rental',
-  },
-  {
-    id: 'tutorias',
-    title: 'Tutorías con profesores',
-    description:
-      'Agenda sesiones de tutoría impartidas por docentes y confirma tu asistencia desde el mismo sistema.',
-    image: imgTutorias,
-    imageAlt: 'Sesión de tutoría académica en campus',
-    href: '/professor-tutoring',
-  },
-]
+const homeServices = DASHBOARD_SECTIONS.map((section) => ({
+  ...section,
+  title:
+    section.id === 'cubiculos'
+      ? 'Reserva de cubículos'
+      : section.id === 'equipo'
+        ? 'Renta de equipo universitario'
+        : 'Tutorías con profesores',
+  description:
+    section.id === 'cubiculos'
+      ? 'Consulta disponibilidad en la biblioteca y aparta un espacio de estudio por horario sin traslapes.'
+      : section.id === 'equipo'
+        ? 'Solicita laptops, proyectores y material de apoyo con seguimiento de entrega y devolución.'
+        : 'Agenda sesiones de tutoría impartidas por docentes y confirma tu asistencia desde el mismo sistema.',
+}))
 
-/**
- * @param {object} props
- * @param {string} props.title
- * @param {string} props.description
- * @param {string} props.image
- * @param {string} props.imageAlt
- * @param {string} [props.href]
- * @param {string} [props.buttonLabel]
- * @param {'left' | 'right'} [props.imagePosition]
- */
 export function CardHome({
   title,
   description,
