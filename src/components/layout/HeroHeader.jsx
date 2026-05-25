@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { QuickMenu } from '@/components/layout/QuickMenu'
 
 const imageModules = import.meta.glob('@/assets/images/*.{webp,jpg,jpeg,png,gif}', {
   eager: true,
@@ -16,6 +17,7 @@ const heroImages = Object.keys(imageModules)
  * @param {string} [props.image] imagen fija de fondo (ej. cubículo seleccionado)
  * @param {string} [props.imageAlt]
  * @param {number} [props.capacity] capacidad máxima del espacio
+ * @param {boolean} [props.showQuickMenu] solo menú rápido (sin título ni descripción)
  */
 export function HeroHeader({
   title = 'Bienvenido al sistema de reservas de la UACH',
@@ -23,10 +25,14 @@ export function HeroHeader({
   image,
   imageAlt = '',
   capacity,
+  showQuickMenu = false,
 }) {
   const images = useMemo(() => (image ? [image] : heroImages), [image])
   const [activeIndex, setActiveIndex] = useState(0)
   const showIndicators = !image && images.length > 1
+  const heightClass = showQuickMenu
+    ? 'min-h-[220px] sm:min-h-[280px]'
+    : 'min-h-[300px] sm:min-h-[400px] lg:min-h-[480px]'
 
   useEffect(() => {
     if (images.length <= 1) return undefined
@@ -40,7 +46,7 @@ export function HeroHeader({
 
   return (
     <header className="relative w-full overflow-hidden">
-      <div className="relative min-h-[300px] sm:min-h-[400px] lg:min-h-[480px]">
+      <div className={`relative ${heightClass}`}>
         {images.length > 0 ? (
           <img
             key={images[activeIndex]}
@@ -59,21 +65,29 @@ export function HeroHeader({
           aria-hidden="true"
         />
 
-        <div className="relative z-10 flex min-h-[300px] flex-col items-center justify-center px-6 py-12 text-center sm:min-h-[400px] sm:px-10 lg:min-h-[480px]">
-          <h1 className="font-alverata max-w-4xl text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
-            {title}
-          </h1>
-          <p className="font-praxis mt-4 max-w-3xl text-base leading-relaxed text-white/90 sm:text-lg">
-            {description}
-          </p>
-          {capacity != null ? (
-            <p className="font-praxis mt-3 text-sm font-medium text-uach-gold-400 sm:text-base">
-              Capacidad máxima:{' '}
-              <span className="font-semibold text-white">
-                {capacity} {capacity === 1 ? 'persona' : 'personas'}
-              </span>
-            </p>
-          ) : null}
+        <div
+          className={`relative z-10 flex flex-col items-center justify-center px-6 py-10 text-center sm:px-10 ${heightClass}`}
+        >
+          {showQuickMenu ? (
+            <QuickMenu />
+          ) : (
+            <>
+              <h1 className="font-alverata max-w-4xl text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
+                {title}
+              </h1>
+              <p className="font-praxis mt-4 max-w-3xl text-base leading-relaxed text-white/90 sm:text-lg">
+                {description}
+              </p>
+              {capacity != null ? (
+                <p className="font-praxis mt-3 text-sm font-medium text-uach-gold-400 sm:text-base">
+                  Capacidad máxima:{' '}
+                  <span className="font-semibold text-white">
+                    {capacity} {capacity === 1 ? 'persona' : 'personas'}
+                  </span>
+                </p>
+              ) : null}
+            </>
+          )}
         </div>
 
         {showIndicators ? (
