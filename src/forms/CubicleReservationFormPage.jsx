@@ -75,6 +75,13 @@ function resolveInitialDate(stateDate, minDate, maxDate) {
   return minDate
 }
 
+function getPastSlots(date) {
+  if (date !== todayIso()) return new Set()
+  const now = new Date()
+  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+  return new Set(RESERVATION_TIME_OPTIONS.filter((slot) => slot <= currentTime))
+}
+
 export function CubicleReservationFormPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -126,10 +133,12 @@ export function CubicleReservationFormPage() {
 
   const cubicleId = cubicle?.id ?? 0
 
-  const availableStartOptions = useMemo(
-    () => RESERVATION_TIME_OPTIONS.slice(0, -1).filter((slot) => !occupiedSlots.has(slot)),
-    [occupiedSlots],
-  )
+  const availableStartOptions = useMemo(() => {
+    const pastSlots = getPastSlots(reservationDate)
+    return RESERVATION_TIME_OPTIONS.slice(0, -1).filter(
+      (slot) => !occupiedSlots.has(slot) && !pastSlots.has(slot),
+    )
+  }, [occupiedSlots, reservationDate])
 
   const availableEndOptions = useMemo(() => {
     if (!startTime) return []

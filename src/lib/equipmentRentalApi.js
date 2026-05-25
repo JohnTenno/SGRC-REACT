@@ -97,7 +97,7 @@ export async function createEquipmentRentalRequest(selections) {
     throw { status: 401, message: 'Debes iniciar sesión para solicitar equipo.' }
   }
 
-  const response = await fetch('/api/v1/equipment-rental-requests', {
+  const response = await fetch('/api/equipment-rental-requests', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

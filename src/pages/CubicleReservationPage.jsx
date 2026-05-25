@@ -91,6 +91,7 @@ export function CubicleReservationPage() {
                     <li key={cubicle.id} className="flex">
                       <CubicleCard
                         name={cubicle.identifier}
+                        image={cubicle.logoUrl}
                         capacity={cubicle.capacity}
                         availabilityDayLabel={todayLabel}
                         selected={selectedCubicleId === cubicle.id}

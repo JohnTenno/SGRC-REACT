@@ -7,7 +7,16 @@ export function getAvailableTutoringSlots(professor, isoDate) {
   }
 
   const booked = getBookedTutoringSlots(professor.id, isoDate, professor.tutoringHourSlots)
-  return professor.tutoringHourSlots.filter((slot) => !booked.has(slot))
+
+  const today = new Date().toISOString().slice(0, 10)
+  let pastSlots = new Set()
+  if (isoDate === today) {
+    const now = new Date()
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+    pastSlots = new Set(professor.tutoringHourSlots.filter((slot) => slot <= currentTime))
+  }
+
+  return professor.tutoringHourSlots.filter((slot) => !booked.has(slot) && !pastSlots.has(slot))
 }
 
 function getBookedTutoringSlots(professorId, isoDate, slots) {
