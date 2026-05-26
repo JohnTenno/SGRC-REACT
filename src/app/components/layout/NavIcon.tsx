@@ -1,0 +1,1 @@
+export { NavIcon } from '@/app/components/common/icons'
