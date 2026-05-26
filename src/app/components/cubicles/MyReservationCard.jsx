@@ -96,6 +96,13 @@ export function MyReservationCard({ reservation, variant, onUpdated }) {
     >
       <div className="flex flex-col sm:flex-row">
         <div className="relative h-36 w-full shrink-0 overflow-hidden bg-uach-purple-950 sm:h-auto sm:w-40">
+          {reservation.cubicleLogoUrl ? (
+            <img
+              src={reservation.cubicleLogoUrl}
+              alt={reservation.cubicleIdentifier ?? 'Cubículo'}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : null}
           <div
             className="absolute inset-0 bg-uach-purple-900/40"
             aria-hidden="true"

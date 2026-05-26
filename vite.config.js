@@ -16,7 +16,7 @@ export default defineConfig({
     https: true,
     proxy: {
       '/api': { target: 'http://localhost:3000', changeOrigin: true },
-      '/ws': { target: 'http://localhost:3000', changeOrigin: true, ws: true },
+      '/ws': { target: 'ws://localhost:3000', changeOrigin: true, ws: true },
     },
   },
   resolve: {
