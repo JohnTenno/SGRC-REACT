@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { clearAuthSession, getAuthSession } from '@/app/services/auth.service'
 import { IconClose, IconLogout, IconMenu } from '@/app/components/common/icons'
 import { isNavLinkActive, NAV_LINKS, NavIcon } from '@/app/components/layout/navConfig'
+import { StudentNotificationBell } from '@/app/components/common/notifications/StudentNotificationBell'
 import escudoUach from '@/assets/escudo-color.png'
 
 const navLinkClass =
@@ -206,21 +207,25 @@ export function Navbar() {
 
         <div className="hidden shrink-0 items-center gap-2 md:flex md:gap-3">
           <UserProfileInfo user={user} />
+          <StudentNotificationBell dark />
           <LogoutButton
             className="rounded-md p-2 text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400"
           />
         </div>
 
-        <button
-          type="button"
-          className="rounded-md p-2 text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400 md:hidden"
-          aria-expanded={isMenuOpen}
-          aria-controls="navbar-mobile-menu"
-          aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-          onClick={() => setIsMenuOpen((open) => !open)}
-        >
-          <MenuIcon open={isMenuOpen} />
-        </button>
+        <div className="flex shrink-0 items-center gap-1 md:hidden">
+          <StudentNotificationBell dark />
+          <button
+            type="button"
+            className="rounded-md p-2 text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400"
+            aria-expanded={isMenuOpen}
+            aria-controls="navbar-mobile-menu"
+            aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            onClick={() => setIsMenuOpen((open) => !open)}
+          >
+            <MenuIcon open={isMenuOpen} />
+          </button>
+        </div>
       </nav>
 
       <MobileSideMenu

@@ -12,8 +12,8 @@ import { createEquipmentRentalRequest } from '@/app/services/equipment/rental.se
 import { hasActiveEquipmentFilters } from '@/app/components/equipment/filterEquipmentCatalog'
 
 function clampQuantityForItem(item, quantity) {
-  if (!item || item.totalStock <= 0) return 0
-  return Math.max(1, Math.min(quantity, item.totalStock))
+  if (!item || item.availableStock <= 0) return 0
+  return Math.max(1, Math.min(quantity, item.availableStock))
 }
 
 export function EquipmentRentalPage() {
@@ -35,7 +35,6 @@ export function EquipmentRentalPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  // selectionById stores the full item object so selections persist across pages/filters
   const [selectionById, setSelectionById] = useState({})
   const [fieldErrors, setFieldErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -82,7 +81,7 @@ export function EquipmentRentalPage() {
   const hasSelection = selectedEquipment.length > 0
 
   function toggleSelection(item) {
-    if (!item || item.totalStock <= 0) return
+    if (!item || item.availableStock <= 0) return
     setSelectionById((current) => {
       if (current[item.id]) {
         const next = { ...current }
@@ -246,7 +245,7 @@ export function EquipmentRentalPage() {
                       <li key={item.id} className="flex">
                         <EquipmentCard
                           type={item.type}
-                          totalStock={item.totalStock}
+                          availableStock={item.availableStock}
                           image={item.image}
                           imageAlt={item.imageAlt}
                           selected={Boolean(selectionById[item.id])}

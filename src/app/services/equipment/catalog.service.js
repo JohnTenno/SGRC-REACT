@@ -19,6 +19,7 @@ function normalizeEquipment(raw) {
     type: raw.name,
     description: raw.description ?? '',
     totalStock: raw.totalStock ?? 0,
+    availableStock: raw.availableStock ?? raw.totalStock ?? 0,
     image: raw.logoUrl ?? raw.image ?? DEFAULT_EQUIPMENT_IMAGE,
     imageAlt: raw.imageAlt ?? DEFAULT_EQUIPMENT_IMAGE_ALT,
   }

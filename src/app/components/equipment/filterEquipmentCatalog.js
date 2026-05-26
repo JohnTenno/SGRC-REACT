@@ -11,11 +11,11 @@ export function filterEquipmentCatalog({
       return false
     }
 
-    if (stockFilter === 'in_stock' && item.totalStock <= 0) {
+    if (stockFilter === 'in_stock' && item.availableStock <= 0) {
       return false
     }
 
-    if (stockFilter === 'out_of_stock' && item.totalStock > 0) {
+    if (stockFilter === 'out_of_stock' && item.availableStock > 0) {
       return false
     }
 

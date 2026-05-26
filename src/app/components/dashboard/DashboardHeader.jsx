@@ -1,5 +1,6 @@
-﻿import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { clearAuthSession, getAuthSession } from '@/app/services/auth.service'
+import { AdminNotificationBell } from '@/app/components/common/notifications/AdminNotificationBell'
 
 function getInitials(name) {
   return name
@@ -40,6 +41,7 @@ export function DashboardHeader() {
           >
             {getInitials(user.name)}
           </div>
+          <AdminNotificationBell />
           <button
             type="button"
             onClick={handleLogout}

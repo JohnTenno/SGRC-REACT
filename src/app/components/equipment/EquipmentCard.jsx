@@ -1,14 +1,14 @@
 import { IconCheck } from '@/app/components/common/icons'
 export function EquipmentCard({
   type,
-  totalStock,
+  availableStock,
   image,
   imageAlt,
   selected = false,
   disabled = false,
   onSelect,
 }) {
-  const outOfStock = totalStock <= 0
+  const outOfStock = availableStock <= 0
   const isDisabled = disabled || outOfStock
 
   return (
@@ -57,7 +57,7 @@ export function EquipmentCard({
               outOfStock ? 'text-red-600' : 'text-uach-gold-600'
             }`}
           >
-            {totalStock}
+            {availableStock}
           </span>
         </p>
       </div>
