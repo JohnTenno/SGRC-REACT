@@ -5,7 +5,7 @@ import { EquipmentPanelToolbar } from '@/app/components/equipment/admin/Equipmen
 import {
   createEquipmentAdmin,
   deleteEquipmentAdmin,
-  fetchEquipmentAdmin,
+  fetchEquipmentAdminPage,
   updateEquipmentAdmin,
 } from '@/app/services/equipment/catalog.service'
 
@@ -19,14 +19,19 @@ function resolveStockFilter(stockFilters) {
 
 export function EquipmentPanelPage() {
   const [equipment, setEquipment] = useState([])
-  const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
   const [panelError, setPanelError] = useState(null)
+
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingEquipment, setEditingEquipment] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
+
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [stockFilters, setStockFilters] = useState([])
@@ -36,34 +41,39 @@ export function EquipmentPanelPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  const stockFilter = resolveStockFilter(stockFilters)
+  const hasActiveFilters = searchQuery.trim().length > 0 || stockFilters.length > 0
 
   const loadEquipment = useCallback(async () => {
+    setIsLoading(true)
     setLoadError(null)
     try {
-      const list = await fetchEquipmentAdmin({ search: debouncedSearch, stockFilter })
-      setEquipment(list)
+      const data = await fetchEquipmentAdminPage({
+        search: debouncedSearch,
+        stockFilter: resolveStockFilter(stockFilters),
+        page,
+      })
+      setEquipment(data.content || [])
+      setTotalPages(data.totalPages ?? 0)
+      setTotalElements(data.totalElements ?? 0)
     } catch (err) {
       setLoadError(err.message ?? 'No se pudo cargar el catálogo de equipo.')
     } finally {
       setIsLoading(false)
     }
-  }, [debouncedSearch, stockFilter])
+  }, [page, debouncedSearch, stockFilters])
 
   useEffect(() => {
-    setIsLoading(true)
-    loadEquipment()
+    async function run() {
+      await loadEquipment()
+    }
+    run()
   }, [loadEquipment])
-
-  useEffect(() => {
-    fetchEquipmentAdmin().then((all) => setTotalCount(all.length)).catch(() => {})
-  }, [])
-
-  const hasActiveFilters = searchQuery.trim().length > 0 || stockFilters.length > 0
 
   function clearFilters() {
     setSearchQuery('')
+    setDebouncedSearch('')
     setStockFilters([])
+    setPage(0)
   }
 
   async function handleCreate(values) {
@@ -71,9 +81,8 @@ export function EquipmentPanelPage() {
     setPanelError(null)
     try {
       await createEquipmentAdmin(values)
-      setTotalCount((n) => n + 1)
       setShowCreateForm(false)
-      await loadEquipment()
+      loadEquipment()
     } catch (err) {
       setPanelError(err.message ?? 'No se pudo crear el equipo.')
     } finally {
@@ -88,7 +97,7 @@ export function EquipmentPanelPage() {
     try {
       await updateEquipmentAdmin(editingEquipment.id, values)
       setEditingEquipment(null)
-      await loadEquipment()
+      loadEquipment()
     } catch (err) {
       setPanelError(err.message ?? 'No se pudo actualizar el equipo.')
     } finally {
@@ -106,8 +115,7 @@ export function EquipmentPanelPage() {
     setPanelError(null)
     try {
       await deleteEquipmentAdmin(item.id)
-      setTotalCount((n) => n - 1)
-      await loadEquipment()
+      loadEquipment()
     } catch (err) {
       setPanelError(err.message ?? 'No se pudo eliminar el equipo.')
     } finally {
@@ -133,7 +141,7 @@ export function EquipmentPanelPage() {
           stockFilters={stockFilters}
           onStockFiltersChange={setStockFilters}
           resultCount={equipment.length}
-          totalCount={totalCount}
+          totalCount={totalElements}
           hasActiveFilters={hasActiveFilters}
           onClearFilters={clearFilters}
         >
@@ -199,31 +207,53 @@ export function EquipmentPanelPage() {
           <p className="font-praxis rounded-xl border border-red-200 bg-red-50 px-4 py-8 text-center text-sm text-red-600">
             {loadError}
           </p>
-        ) : totalCount === 0 ? (
-          <p className="font-praxis rounded-xl border border-dashed border-uach-purple-900/20 px-4 py-12 text-center text-sm text-uach-purple-900/60">
-            No hay equipo registrado. Agrega el primero con el botón de arriba.
-          </p>
         ) : equipment.length === 0 ? (
           <p className="font-praxis rounded-xl border border-dashed border-uach-purple-900/20 px-4 py-12 text-center text-sm text-uach-purple-900/60">
-            No hay equipo que coincida con tu búsqueda o filtros.
+            No se encontró equipo.
           </p>
         ) : (
-          <ul className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {equipment.map((item) => (
-              <li key={item.id} className="flex w-full">
-                <EquipmentAdminCard
-                  equipment={item}
-                  isEditing={editingEquipment?.id === item.id}
-                  isDeleting={deletingId === item.id}
-                  onEdit={() => {
-                    setEditingEquipment(item)
-                    setShowCreateForm(false)
-                  }}
-                  onDelete={() => handleDelete(item)}
-                />
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {equipment.map((item) => (
+                <li key={item.id} className="flex w-full">
+                  <EquipmentAdminCard
+                    equipment={item}
+                    isEditing={editingEquipment?.id === item.id}
+                    isDeleting={deletingId === item.id}
+                    onEdit={() => {
+                      setEditingEquipment(item)
+                      setShowCreateForm(false)
+                    }}
+                    onDelete={() => handleDelete(item)}
+                  />
+                </li>
+              ))}
+            </ul>
+
+            {totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-between border-t border-uach-purple-900/10 pt-4">
+                <span className="font-praxis text-sm text-uach-purple-900/70">
+                  Página <strong>{page + 1}</strong> de <strong>{totalPages}</strong> ({totalElements} totales)
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    className="font-praxis rounded-md border border-uach-purple-900/20 px-4 py-1.5 text-sm text-uach-purple-900 transition-colors hover:bg-uach-purple-900/5 disabled:opacity-50 disabled:hover:bg-transparent"
+                    disabled={page === 0}
+                    onClick={() => setPage((p) => p - 1)}
+                  >
+                    Anterior
+                  </button>
+                  <button
+                    className="font-praxis rounded-md border border-uach-purple-900/20 px-4 py-1.5 text-sm text-uach-purple-900 transition-colors hover:bg-uach-purple-900/5 disabled:opacity-50 disabled:hover:bg-transparent"
+                    disabled={page >= totalPages - 1}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>

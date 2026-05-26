@@ -38,6 +38,23 @@ export async function fetchEquipmentAdmin({ search = '', stockFilter = 'all' } =
   return (Array.isArray(data) ? data : []).map(normalizeEquipment)
 }
 
+export async function fetchEquipmentAdminPage({ search = '', stockFilter = 'all', page = 0, size = 9 } = {}) {
+  const session = getAuthSession()
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  if (search.trim()) params.set('search', search.trim())
+  if (stockFilter && stockFilter !== 'all') params.set('stockFilter', stockFilter)
+  const response = await fetch(`/api/equipment-types/page?${params}`, {
+    headers: session?.token ? authHeaders(session.token) : {},
+  })
+  if (!response.ok) throw { status: response.status, message: 'No se pudo cargar el catálogo de equipo.' }
+  const data = await parseJson(response)
+  return {
+    content: (Array.isArray(data?.content) ? data.content : []).map(normalizeEquipment),
+    totalPages: data?.totalPages ?? 1,
+    totalElements: data?.totalElements ?? 0,
+  }
+}
+
 export async function getEquipmentCatalog() {
   return fetchEquipmentAdmin()
 }

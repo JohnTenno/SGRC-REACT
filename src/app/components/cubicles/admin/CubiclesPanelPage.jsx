@@ -25,8 +25,14 @@ export function CubiclesPanelPage() {
   const [deletingId, setDeletingId] = useState(null)
 
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [statusFilters, setStatusFilters] = useState([])
   const [minCapacity, setMinCapacity] = useState(0)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   const hasActiveFilters = statusFilters.length > 0 || minCapacity > 0
 
@@ -37,7 +43,7 @@ export function CubiclesPanelPage() {
       const data = await fetchCubiclesAdmin({
         page,
         size: 10,
-        search: searchQuery,
+        search: debouncedSearch,
         statusFilters,
         minCapacity
       })
@@ -49,7 +55,7 @@ export function CubiclesPanelPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [page, searchQuery, statusFilters, minCapacity])
+  }, [page, debouncedSearch, statusFilters, minCapacity])
 
   useEffect(() => {
     async function run() {
@@ -63,6 +69,7 @@ export function CubiclesPanelPage() {
     setStatusFilters([])
     setMinCapacity(0)
     setSearchQuery('')
+    setDebouncedSearch('')
     setPage(0)
   }
 

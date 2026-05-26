@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EquipmentCatalogToolbar } from '@/app/components/equipment/EquipmentCatalogToolbar'
 import { EquipmentSelectionSummary } from '@/app/components/equipment/EquipmentSelectionSummary'
@@ -7,14 +7,9 @@ import { FailAnimation } from '@/app/components/common/animations/FailAnimation'
 import { SuccessAnimation } from '@/app/components/common/animations/SuccessAnimation'
 import { HeroHeader } from '@/app/components/layout/HeroHeader'
 import { Navbar } from '@/app/components/layout/Navbar'
-import { fetchEquipmentAdmin } from '@/app/services/equipment/catalog.service'
+import { fetchEquipmentAdminPage } from '@/app/services/equipment/catalog.service'
 import { createEquipmentRentalRequest } from '@/app/services/equipment/rental.service'
-import {
-  filterEquipmentCatalog,
-  hasActiveEquipmentFilters,
-} from '@/app/components/equipment/filterEquipmentCatalog'
-
-const PAGE_SIZE = 9
+import { hasActiveEquipmentFilters } from '@/app/components/equipment/filterEquipmentCatalog'
 
 function clampQuantityForItem(item, quantity) {
   if (!item || item.totalStock <= 0) return 0
@@ -23,80 +18,84 @@ function clampQuantityForItem(item, quantity) {
 
 export function EquipmentRentalPage() {
   const navigate = useNavigate()
-  const [allEquipment, setAllEquipment] = useState([])
-  const [quantitiesById, setQuantitiesById] = useState({})
+
+  const [catalogEquipment, setCatalogEquipment] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [stockFilter, setStockFilter] = useState('all')
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // selectionById stores the full item object so selections persist across pages/filters
+  const [selectionById, setSelectionById] = useState({})
   const [fieldErrors, setFieldErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [failMessage, setFailMessage] = useState(null)
   const [pendingOrder, setPendingOrder] = useState(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [stockFilter, setStockFilter] = useState('all')
-  const [page, setPage] = useState(0)
+
+  const loadCatalog = useCallback(async () => {
+    setIsLoading(true)
+    setLoadError(null)
+    try {
+      const data = await fetchEquipmentAdminPage({ search: debouncedSearch, stockFilter, page })
+      setCatalogEquipment(data.content || [])
+      setTotalPages(data.totalPages ?? 0)
+      setTotalElements(data.totalElements ?? 0)
+    } catch (err) {
+      setLoadError(err.message ?? 'No se pudo cargar el catálogo de equipo.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [page, debouncedSearch, stockFilter])
 
   useEffect(() => {
-    fetchEquipmentAdmin()
-      .then(setAllEquipment)
-      .catch(() => setAllEquipment([]))
-  }, [])
+    async function run() {
+      await loadCatalog()
+    }
+    run()
+  }, [loadCatalog])
 
-  function getItemById(id) {
-    return allEquipment.find((item) => item.id === Number(id)) ?? null
+  function clearFilters() {
+    setSearchQuery('')
+    setDebouncedSearch('')
+    setStockFilter('all')
+    setPage(0)
   }
 
-  const filteredEquipment = useMemo(
-    () =>
-      filterEquipmentCatalog({
-        searchQuery,
-        stockFilter,
-        items: allEquipment,
-      }),
-    [searchQuery, stockFilter, allEquipment],
-  )
-
-  const hasActiveFilters = hasActiveEquipmentFilters({
-    searchQuery,
-    stockFilter,
-  })
-
-  const totalPages = Math.max(1, Math.ceil(filteredEquipment.length / PAGE_SIZE))
-  const pagedEquipment = filteredEquipment.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-
-  useEffect(() => {
-    setPage(0)
-  }, [searchQuery, stockFilter])
+  const hasActiveFilters = hasActiveEquipmentFilters({ searchQuery, stockFilter })
 
   const selectedEquipment = useMemo(
-    () =>
-      Object.entries(quantitiesById)
-        .map(([id, quantity]) => {
-          const item = getItemById(Number(id))
-          if (!item || quantity < 1) return null
-          return { ...item, quantity }
-        })
-        .filter((item) => item != null),
-    [quantitiesById, allEquipment],
+    () => Object.values(selectionById).map((s) => ({ ...s.item, quantity: s.quantity })),
+    [selectionById],
   )
 
   const hasSelection = selectedEquipment.length > 0
 
-  function toggleSelection(id) {
-    const item = getItemById(id)
+  function toggleSelection(item) {
     if (!item || item.totalStock <= 0) return
-
-    setQuantitiesById((current) => {
-      if (current[id]) {
+    setSelectionById((current) => {
+      if (current[item.id]) {
         const next = { ...current }
-        delete next[id]
+        delete next[item.id]
         return next
       }
-      return { ...current, [id]: 1 }
+      return { ...current, [item.id]: { item, quantity: 1 } }
     })
     setFieldErrors({})
   }
 
   function removeFromSelection(id) {
-    setQuantitiesById((current) => {
+    setSelectionById((current) => {
       const next = { ...current }
       delete next[id]
       return next
@@ -105,16 +104,17 @@ export function EquipmentRentalPage() {
   }
 
   function updateQuantity(id, nextQuantity) {
-    const item = getItemById(id)
-    if (!item) return
-
-    if (nextQuantity < 1) {
-      removeFromSelection(id)
-      return
-    }
-
-    const quantity = clampQuantityForItem(item, nextQuantity)
-    setQuantitiesById((current) => ({ ...current, [id]: quantity }))
+    setSelectionById((current) => {
+      const entry = current[id]
+      if (!entry) return current
+      if (nextQuantity < 1) {
+        const next = { ...current }
+        delete next[id]
+        return next
+      }
+      const quantity = clampQuantityForItem(entry.item, nextQuantity)
+      return { ...current, [id]: { ...entry, quantity } }
+    })
     setFieldErrors({})
   }
 
@@ -138,9 +138,7 @@ export function EquipmentRentalPage() {
       setPendingOrder(order)
       setShowSuccess(true)
     } catch (error) {
-      setFailMessage(
-        error?.message ?? 'No se pudo enviar la solicitud. Intenta de nuevo.',
-      )
+      setFailMessage(error?.message ?? 'No se pudo enviar la solicitud. Intenta de nuevo.')
     } finally {
       setIsSubmitting(false)
     }
@@ -148,7 +146,7 @@ export function EquipmentRentalPage() {
 
   function handleSuccessComplete() {
     setShowSuccess(false)
-    setQuantitiesById({})
+    setSelectionById({})
     navigate(`/equipment-rental/order/${pendingOrder.id}`, { state: { order: pendingOrder } })
     setPendingOrder(null)
   }
@@ -215,17 +213,24 @@ export function EquipmentRentalPage() {
                   onSearchChange={setSearchQuery}
                   stockFilter={stockFilter}
                   onStockFilterChange={setStockFilter}
-                  resultCount={filteredEquipment.length}
-                  totalCount={allEquipment.length}
+                  resultCount={catalogEquipment.length}
+                  totalCount={totalElements}
                   hasActiveFilters={hasActiveFilters}
-                  onClearFilters={() => {
-                    setSearchQuery('')
-                    setStockFilter('all')
-                  }}
+                  onClearFilters={clearFilters}
                 />
               </div>
 
-              {filteredEquipment.length === 0 ? (
+              {isLoading ? (
+                <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2, 3].map((n) => (
+                    <li key={n} className="h-56 w-full animate-pulse rounded-lg bg-uach-purple-900/8" />
+                  ))}
+                </ul>
+              ) : loadError ? (
+                <p className="font-praxis mt-8 rounded-xl border border-red-200 bg-red-50 px-4 py-8 text-center text-sm text-red-600">
+                  {loadError}
+                </p>
+              ) : catalogEquipment.length === 0 ? (
                 <div className="font-praxis mt-8 rounded-xl border border-dashed border-uach-purple-900/20 bg-uach-purple-50/30 px-6 py-10 text-center text-sm text-uach-purple-900/70">
                   <p className="font-medium text-uach-purple-900">
                     No hay equipos con esos criterios
@@ -237,24 +242,24 @@ export function EquipmentRentalPage() {
               ) : (
                 <>
                   <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {pagedEquipment.map((item) => (
+                    {catalogEquipment.map((item) => (
                       <li key={item.id} className="flex">
                         <EquipmentCard
                           type={item.type}
                           totalStock={item.totalStock}
                           image={item.image}
                           imageAlt={item.imageAlt}
-                          selected={Boolean(quantitiesById[item.id])}
-                          onSelect={() => toggleSelection(item.id)}
+                          selected={Boolean(selectionById[item.id])}
+                          onSelect={() => toggleSelection(item)}
                         />
                       </li>
                     ))}
                   </ul>
 
-                  {filteredEquipment.length > 0 && (
+                  {totalPages > 1 && (
                     <div className="mt-8 flex items-center justify-between border-t border-uach-purple-900/10 pt-4">
                       <span className="font-praxis text-sm text-uach-purple-900/70">
-                        Página <strong>{page + 1}</strong> de <strong>{totalPages}</strong>
+                        Página <strong>{page + 1}</strong> de <strong>{totalPages}</strong> ({totalElements} totales)
                       </span>
                       <div className="flex gap-2">
                         <button
