@@ -12,7 +12,7 @@ import {
   formatTimeForDisplay,
   hasCheckedIn,
 } from '@/lib/reservationTimeline'
-
+//logueo de checkin
 export function CheckInPage() {
   const { id } = useParams()
   const navigate = useNavigate()
