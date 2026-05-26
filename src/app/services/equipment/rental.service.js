@@ -3,7 +3,6 @@ import {
   EQUIPMENT_REQUEST_STATUS,
   getEquipmentRequestStatusLabel,
 } from '@/app/components/equipment/equipmentRequestStatus'
-import { upsertEquipmentRentalRequestFromOrder } from '@/app/services/equipment/equipmentRentalRequestsStore'
 
 export const EQUIPMENT_PICKUP_LOCATION = 'Biblioteca — mostrador de material solicitado'
 
@@ -72,7 +71,6 @@ export async function createEquipmentRentalRequest(selections) {
 
   try {
     const order = normalizeEquipmentRentalRequest(data)
-    upsertEquipmentRentalRequestFromOrder(order, session.user)
     return order
   } catch (error) {
     throw {

@@ -1,6 +1,5 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { IconClose, IconFilters, IconSearch } from '@/app/components/common/icons'
-import { EQUIPMENT_CATEGORIES } from '@/app/services/equipment/catalog.service'
 
 const STOCK_FILTER_OPTIONS = [
   { value: 'in_stock', label: 'Con stock' },
@@ -16,8 +15,6 @@ const filterToggleClass =
 export function EquipmentPanelToolbar({
   searchQuery,
   onSearchChange,
-  categoryFilters,
-  onCategoryFiltersChange,
   stockFilters,
   onStockFiltersChange,
   resultCount,
@@ -45,14 +42,6 @@ export function EquipmentPanelToolbar({
     }
   }, [isFiltersOpen])
 
-  function toggleCategory(value) {
-    onCategoryFiltersChange(
-      categoryFilters.includes(value)
-        ? categoryFilters.filter((item) => item !== value)
-        : [...categoryFilters, value],
-    )
-  }
-
   function toggleStock(value) {
     onStockFiltersChange(
       stockFilters.includes(value)
@@ -75,7 +64,7 @@ export function EquipmentPanelToolbar({
               type="search"
               value={searchQuery}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Buscar por nombre, ID, categoría o stock…"
+              placeholder="Buscar por nombre, ID o stock…"
               className={searchInputClass}
               autoComplete="off"
             />
@@ -111,8 +100,6 @@ export function EquipmentPanelToolbar({
       <EquipmentFiltersSidebar
         isOpen={isFiltersOpen}
         onClose={() => setIsFiltersOpen(false)}
-        categoryFilters={categoryFilters}
-        onToggleCategory={toggleCategory}
         stockFilters={stockFilters}
         onToggleStock={toggleStock}
         hasActiveFilters={hasActiveFilters}
@@ -126,8 +113,6 @@ export function EquipmentPanelToolbar({
 function EquipmentFiltersSidebar({
   isOpen,
   onClose,
-  categoryFilters,
-  onToggleCategory,
   stockFilters,
   onToggleStock,
   hasActiveFilters,
@@ -177,24 +162,6 @@ function EquipmentFiltersSidebar({
 
         <div className="flex-1 overflow-y-auto px-5 py-6">
           <div className="flex flex-col gap-8">
-            <fieldset className="flex flex-col gap-3 border-0 p-0">
-              <legend className="font-praxis text-xs font-semibold uppercase tracking-wide text-uach-purple-900/55">
-                Categoría
-              </legend>
-              <ul className="flex flex-col gap-2" role="list">
-                {EQUIPMENT_CATEGORIES.map((item) => (
-                  <li key={item.value}>
-                    <FilterCheckbox
-                      id={`equipment-filter-category-${item.value}`}
-                      checked={categoryFilters.includes(item.value)}
-                      onChange={() => onToggleCategory(item.value)}
-                      label={item.label}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </fieldset>
-
             <fieldset className="flex flex-col gap-3 border-0 p-0">
               <legend className="font-praxis text-xs font-semibold uppercase tracking-wide text-uach-purple-900/55">
                 Disponibilidad

@@ -1,15 +1,8 @@
-﻿import { getAuthSession } from '@/app/services/auth.service'
+import { getAuthSession } from '@/app/services/auth.service'
 import {
   DEFAULT_EQUIPMENT_IMAGE,
   DEFAULT_EQUIPMENT_IMAGE_ALT,
-  EQUIPMENT_CATEGORY_LABELS,
 } from '@/app/components/equipment/equipmentConstants'
-
-export { EQUIPMENT_CATEGORY_LABELS }
-
-export const EQUIPMENT_CATEGORIES = Object.entries(EQUIPMENT_CATEGORY_LABELS).map(
-  ([value, label]) => ({ value, label }),
-)
 
 function authHeaders(token) {
   return { Authorization: `Bearer ${token}` }
@@ -23,21 +16,21 @@ async function parseJson(response) {
 function normalizeEquipment(raw) {
   return {
     id: raw.id,
-    type: raw.type ?? raw.name,
-    category: raw.category,
-    availableStock: raw.availableStock,
+    type: raw.name,
+    description: raw.description ?? '',
+    totalStock: raw.totalStock ?? 0,
     image: raw.logoUrl ?? raw.image ?? DEFAULT_EQUIPMENT_IMAGE,
     imageAlt: raw.imageAlt ?? DEFAULT_EQUIPMENT_IMAGE_ALT,
   }
 }
 
-export function getEquipmentCategoryLabel(category) {
-  return EQUIPMENT_CATEGORY_LABELS[category] ?? category
-}
-
-export async function fetchEquipmentAdmin() {
+export async function fetchEquipmentAdmin({ search = '', stockFilter = 'all' } = {}) {
   const session = getAuthSession()
-  const response = await fetch('/api/equipment-types', {
+  const params = new URLSearchParams()
+  if (search.trim()) params.set('search', search.trim())
+  if (stockFilter && stockFilter !== 'all') params.set('stockFilter', stockFilter)
+  const url = `/api/equipment-types${params.toString() ? `?${params}` : ''}`
+  const response = await fetch(url, {
     headers: session?.token ? authHeaders(session.token) : {},
   })
   if (!response.ok) throw { status: response.status, message: 'No se pudo cargar el catálogo de equipo.' }
@@ -54,13 +47,13 @@ export async function getEquipmentById(id) {
   return all.find((item) => item.id === Number(id)) ?? null
 }
 
-export async function createEquipmentAdmin({ type, category, availableStock, image = null }) {
+export async function createEquipmentAdmin({ type, totalStock, image = null }) {
   const session = getAuthSession()
   if (!session?.token) throw { status: 401, message: 'Debes iniciar sesión.' }
   const response = await fetch('/api/equipment-types', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders(session.token) },
-    body: JSON.stringify({ name: type, category, availableStock, logoUrl: image?.trim() || null }),
+    body: JSON.stringify({ name: type, totalStock, logoUrl: image?.trim() || null }),
   })
   const data = await parseJson(response)
   if (!response.ok) throw { status: response.status, message: data?.message ?? 'No se pudo crear el equipo.' }
@@ -75,8 +68,7 @@ export async function updateEquipmentAdmin(id, patch) {
     headers: { 'Content-Type': 'application/json', ...authHeaders(session.token) },
     body: JSON.stringify({
       name: patch.type,
-      category: patch.category,
-      availableStock: patch.availableStock,
+      totalStock: patch.totalStock,
       logoUrl: patch.image?.trim() || null,
     }),
   })

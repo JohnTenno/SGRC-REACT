@@ -6,6 +6,7 @@ export const EMPTY_DATE_TIME_FILTERS = {
 }
 
 export function hasActiveEquipmentRequestFilters({
+  searchQuery = '',
   statusFilters,
   dateFrom,
   dateTo,
@@ -13,6 +14,7 @@ export function hasActiveEquipmentRequestFilters({
   timeTo,
 }) {
   return (
+    searchQuery.trim().length > 0 ||
     statusFilters.length > 0 ||
     Boolean(dateFrom || dateTo || timeFrom || timeTo)
   )

@@ -1,10 +1,9 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { IconPencil, IconTrash } from '@/app/components/common/icons'
 import {
   EQUIPMENT_CARD_IMAGE,
   equipmentCardClasses as c,
 } from '@/app/components/equipment/equipmentCardTheme'
-import { EquipmentCategoryBadge } from '@/app/components/equipment/admin/EquipmentCategoryBadge'
 
 function resolveAdminImageSrc(image) {
   const trimmed = typeof image === 'string' ? image.trim() : ''
@@ -68,9 +67,6 @@ export function EquipmentAdminCard({
           imageAlt={equipment.imageAlt}
           type={equipment.type}
         />
-        <div className="absolute top-3 left-3 z-10">
-          <EquipmentCategoryBadge category={equipment.category} />
-        </div>
       </div>
 
       <div className={c.body}>
@@ -79,10 +75,10 @@ export function EquipmentAdminCard({
           Disponibles:{' '}
           <span
             className={`${c.stockValue} ${
-              equipment.availableStock <= 0 ? 'text-red-600' : 'text-uach-gold-600'
+              equipment.totalStock <= 0 ? 'text-red-600' : 'text-uach-gold-600'
             }`}
           >
-            {equipment.availableStock}
+            {equipment.totalStock}
           </span>
         </p>
 

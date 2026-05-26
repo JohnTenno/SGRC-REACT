@@ -1,9 +1,7 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { IconClose, IconFilters, IconSearch } from '@/app/components/common/icons'
-import { EQUIPMENT_CATEGORY_LABELS } from '@/app/components/equipment/equipmentConstants'
 
 /** @typedef {'all' | 'in_stock' | 'out_of_stock'} StockFilter */
-/** @typedef {'all' | keyof typeof EQUIPMENT_CATEGORY_LABELS} CategoryFilter */
 
 const STOCK_OPTIONS = [
   { value: 'all', label: 'Todo el stock' },
@@ -17,8 +15,6 @@ const STOCK_OPTIONS = [
  * @param {(value: string) => void} props.onSearchChange
  * @param {StockFilter} props.stockFilter
  * @param {(value: StockFilter) => void} props.onStockFilterChange
- * @param {CategoryFilter} props.categoryFilter
- * @param {(value: CategoryFilter) => void} props.onCategoryFilterChange
  * @param {number} props.resultCount
  * @param {number} props.totalCount
  * @param {() => void} [props.onClearFilters]
@@ -29,8 +25,6 @@ export function EquipmentCatalogToolbar({
   onSearchChange,
   stockFilter,
   onStockFilterChange,
-  categoryFilter,
-  onCategoryFilterChange,
   resultCount,
   totalCount,
   onClearFilters,
@@ -110,8 +104,6 @@ export function EquipmentCatalogToolbar({
         onClose={() => setIsFiltersOpen(false)}
         stockFilter={stockFilter}
         onStockFilterChange={onStockFilterChange}
-        categoryFilter={categoryFilter}
-        onCategoryFilterChange={onCategoryFilterChange}
         hasActiveFilters={hasActiveFilters}
         onClearFilters={onClearFilters}
         resultCount={resultCount}
@@ -120,25 +112,11 @@ export function EquipmentCatalogToolbar({
   )
 }
 
-/**
- * @param {object} props
- * @param {boolean} props.isOpen
- * @param {() => void} props.onClose
- * @param {StockFilter} props.stockFilter
- * @param {(value: StockFilter) => void} props.onStockFilterChange
- * @param {CategoryFilter} props.categoryFilter
- * @param {(value: CategoryFilter) => void} props.onCategoryFilterChange
- * @param {boolean} props.hasActiveFilters
- * @param {() => void} [props.onClearFilters]
- * @param {number} props.resultCount
- */
 function EquipmentFiltersSidebar({
   isOpen,
   onClose,
   stockFilter,
   onStockFilterChange,
-  categoryFilter,
-  onCategoryFilterChange,
   hasActiveFilters,
   onClearFilters,
   resultCount,
@@ -187,29 +165,6 @@ function EquipmentFiltersSidebar({
         <div className="flex-1 overflow-y-auto px-5 py-6">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
-              <span className="font-praxis text-xs font-semibold tracking-wide text-uach-purple-900/55 uppercase">
-                Categoría
-              </span>
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por categoría">
-                <FilterChip
-                  active={categoryFilter === 'all'}
-                  onClick={() => onCategoryFilterChange('all')}
-                >
-                  Todas
-                </FilterChip>
-                {Object.entries(EQUIPMENT_CATEGORY_LABELS).map(([value, label]) => (
-                  <FilterChip
-                    key={value}
-                    active={categoryFilter === value}
-                    onClick={() => onCategoryFilterChange(value)}
-                  >
-                    {label}
-                  </FilterChip>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
               <label
                 htmlFor="equipment-stock-filter-sidebar"
                 className="font-praxis text-xs font-semibold tracking-wide text-uach-purple-900/55 uppercase"
@@ -245,39 +200,11 @@ function EquipmentFiltersSidebar({
         </div>
 
         <footer className="border-t border-uach-purple-900/10 p-5">
-          <button
-            type="button"
-            onClick={onClose}
-            className="button-primary w-full"
-          >
+          <button type="button" onClick={onClose} className="button-primary w-full">
             Ver {resultCount} {resultCount === 1 ? 'equipo' : 'equipos'}
           </button>
         </footer>
       </aside>
     </>
-  )
-}
-
-
-/**
- * @param {object} props
- * @param {boolean} props.active
- * @param {() => void} props.onClick
- * @param {import('react').ReactNode} props.children
- */
-function FilterChip({ active, onClick, children }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`font-praxis rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
-        active
-          ? 'border-uach-gold-500 bg-uach-gold-500 text-uach-purple-950'
-          : 'border-uach-purple-900/15 bg-white text-uach-purple-900 hover:border-uach-purple-700/30'
-      }`}
-    >
-      {children}
-    </button>
   )
 }

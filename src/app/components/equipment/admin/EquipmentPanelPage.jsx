@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { EquipmentAdminCard } from '@/app/components/equipment/admin/EquipmentAdminCard'
 import { EquipmentAdminForm } from '@/app/components/equipment/admin/EquipmentAdminForm'
 import { EquipmentPanelToolbar } from '@/app/components/equipment/admin/EquipmentPanelToolbar'
@@ -6,12 +6,20 @@ import {
   createEquipmentAdmin,
   deleteEquipmentAdmin,
   fetchEquipmentAdmin,
-  getEquipmentCategoryLabel,
   updateEquipmentAdmin,
 } from '@/app/services/equipment/catalog.service'
 
+function resolveStockFilter(stockFilters) {
+  const hasIn = stockFilters.includes('in_stock')
+  const hasOut = stockFilters.includes('out_of_stock')
+  if (hasIn && !hasOut) return 'in_stock'
+  if (hasOut && !hasIn) return 'out_of_stock'
+  return 'all'
+}
+
 export function EquipmentPanelPage() {
   const [equipment, setEquipment] = useState([])
+  const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
   const [panelError, setPanelError] = useState(null)
@@ -20,61 +28,52 @@ export function EquipmentPanelPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [categoryFilters, setCategoryFilters] = useState([])
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [stockFilters, setStockFilters] = useState([])
 
-  const filteredEquipment = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase()
-    return equipment.filter((item) => {
-      if (categoryFilters.length > 0 && !categoryFilters.includes(item.category)) return false
-      if (stockFilters.includes('in_stock') && stockFilters.includes('out_of_stock')) {
-        /* both selected = no stock filter */
-      } else if (stockFilters.includes('in_stock') && item.availableStock <= 0) return false
-      else if (stockFilters.includes('out_of_stock') && item.availableStock > 0) return false
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
-      if (!query) return true
-      const categoryLabel = getEquipmentCategoryLabel(item.category).toLowerCase()
-      const stockLabel = item.availableStock <= 0 ? 'sin stock' : 'con stock'
-      return (
-        item.type.toLowerCase().includes(query) ||
-        String(item.id).includes(query) ||
-        String(item.availableStock).includes(query) ||
-        item.category.toLowerCase().includes(query) ||
-        categoryLabel.includes(query) ||
-        stockLabel.includes(query)
-      )
-    })
-  }, [equipment, searchQuery, categoryFilters, stockFilters])
+  const stockFilter = resolveStockFilter(stockFilters)
 
-  const hasActiveFilters = categoryFilters.length > 0 || stockFilters.length > 0
-
-  function clearFilters() {
-    setCategoryFilters([])
-    setStockFilters([])
-  }
+  const loadEquipment = useCallback(async () => {
+    setLoadError(null)
+    try {
+      const list = await fetchEquipmentAdmin({ search: debouncedSearch, stockFilter })
+      setEquipment(list)
+    } catch (err) {
+      setLoadError(err.message ?? 'No se pudo cargar el catálogo de equipo.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [debouncedSearch, stockFilter])
 
   useEffect(() => {
-    async function load() {
-      setLoadError(null)
-      try {
-        const list = await fetchEquipmentAdmin()
-        setEquipment(list)
-      } catch (err) {
-        setLoadError(err.message ?? 'No se pudo cargar el catálogo de equipo.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    load()
+    setIsLoading(true)
+    loadEquipment()
+  }, [loadEquipment])
+
+  useEffect(() => {
+    fetchEquipmentAdmin().then((all) => setTotalCount(all.length)).catch(() => {})
   }, [])
+
+  const hasActiveFilters = searchQuery.trim().length > 0 || stockFilters.length > 0
+
+  function clearFilters() {
+    setSearchQuery('')
+    setStockFilters([])
+  }
 
   async function handleCreate(values) {
     setIsSubmitting(true)
     setPanelError(null)
     try {
-      const created = await createEquipmentAdmin(values)
+      await createEquipmentAdmin(values)
+      setTotalCount((n) => n + 1)
       setShowCreateForm(false)
-      setEquipment((list) => [...list, created])
+      await loadEquipment()
     } catch (err) {
       setPanelError(err.message ?? 'No se pudo crear el equipo.')
     } finally {
@@ -87,11 +86,11 @@ export function EquipmentPanelPage() {
     setIsSubmitting(true)
     setPanelError(null)
     try {
-      const updated = await updateEquipmentAdmin(editingEquipment.id, values)
-      setEquipment((list) => list.map((item) => (item.id === updated.id ? updated : item)))
+      await updateEquipmentAdmin(editingEquipment.id, values)
       setEditingEquipment(null)
+      await loadEquipment()
     } catch (err) {
-      setPanelError(err.message ?? 'No se pudo crear el equipo.')
+      setPanelError(err.message ?? 'No se pudo actualizar el equipo.')
     } finally {
       setIsSubmitting(false)
     }
@@ -107,7 +106,8 @@ export function EquipmentPanelPage() {
     setPanelError(null)
     try {
       await deleteEquipmentAdmin(item.id)
-      setEquipment((list) => list.filter((entry) => entry.id !== item.id))
+      setTotalCount((n) => n - 1)
+      await loadEquipment()
     } catch (err) {
       setPanelError(err.message ?? 'No se pudo eliminar el equipo.')
     } finally {
@@ -130,12 +130,10 @@ export function EquipmentPanelPage() {
         <EquipmentPanelToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          categoryFilters={categoryFilters}
-          onCategoryFiltersChange={setCategoryFilters}
           stockFilters={stockFilters}
           onStockFiltersChange={setStockFilters}
-          resultCount={filteredEquipment.length}
-          totalCount={equipment.length}
+          resultCount={equipment.length}
+          totalCount={totalCount}
           hasActiveFilters={hasActiveFilters}
           onClearFilters={clearFilters}
         >
@@ -201,17 +199,17 @@ export function EquipmentPanelPage() {
           <p className="font-praxis rounded-xl border border-red-200 bg-red-50 px-4 py-8 text-center text-sm text-red-600">
             {loadError}
           </p>
-        ) : equipment.length === 0 ? (
+        ) : totalCount === 0 ? (
           <p className="font-praxis rounded-xl border border-dashed border-uach-purple-900/20 px-4 py-12 text-center text-sm text-uach-purple-900/60">
             No hay equipo registrado. Agrega el primero con el botón de arriba.
           </p>
-        ) : filteredEquipment.length === 0 ? (
+        ) : equipment.length === 0 ? (
           <p className="font-praxis rounded-xl border border-dashed border-uach-purple-900/20 px-4 py-12 text-center text-sm text-uach-purple-900/60">
             No hay equipo que coincida con tu búsqueda o filtros.
           </p>
         ) : (
           <ul className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredEquipment.map((item) => (
+            {equipment.map((item) => (
               <li key={item.id} className="flex w-full">
                 <EquipmentAdminCard
                   equipment={item}

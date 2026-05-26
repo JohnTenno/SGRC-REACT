@@ -33,7 +33,7 @@ export function EquipmentSelectionSummary({ items, onRemove, onQuantityChange })
               <button
                 type="button"
                 onClick={() => onQuantityChange(item.id, item.quantity + 1)}
-                disabled={item.quantity >= item.availableStock}
+                disabled={item.quantity >= item.totalStock}
                 aria-label={`Más ${item.type}`}
                 className="flex size-6 items-center justify-center rounded-full text-sm font-semibold transition hover:bg-uach-purple-900/10 disabled:cursor-not-allowed disabled:opacity-30"
               >

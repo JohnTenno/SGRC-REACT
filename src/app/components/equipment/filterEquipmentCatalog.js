@@ -2,7 +2,6 @@
 export function filterEquipmentCatalog({
   searchQuery = '',
   stockFilter = 'all',
-  categoryFilter = 'all',
   items = [],
 }) {
   const query = searchQuery.trim().toLowerCase()
@@ -12,15 +11,11 @@ export function filterEquipmentCatalog({
       return false
     }
 
-    if (categoryFilter !== 'all' && item.category !== categoryFilter) {
+    if (stockFilter === 'in_stock' && item.totalStock <= 0) {
       return false
     }
 
-    if (stockFilter === 'in_stock' && item.availableStock <= 0) {
-      return false
-    }
-
-    if (stockFilter === 'out_of_stock' && item.availableStock > 0) {
+    if (stockFilter === 'out_of_stock' && item.totalStock > 0) {
       return false
     }
 
@@ -31,11 +26,6 @@ export function filterEquipmentCatalog({
 export function hasActiveEquipmentFilters({
   searchQuery = '',
   stockFilter = 'all',
-  categoryFilter = 'all',
 }) {
-  return (
-    searchQuery.trim().length > 0 ||
-    stockFilter !== 'all' ||
-    categoryFilter !== 'all'
-  )
+  return searchQuery.trim().length > 0 || stockFilter !== 'all'
 }

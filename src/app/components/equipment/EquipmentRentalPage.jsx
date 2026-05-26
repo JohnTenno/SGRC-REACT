@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { EquipmentCatalogToolbar } from '@/app/components/equipment/EquipmentCatalogToolbar'
 import { EquipmentSelectionSummary } from '@/app/components/equipment/EquipmentSelectionSummary'
@@ -14,9 +14,11 @@ import {
   hasActiveEquipmentFilters,
 } from '@/app/components/equipment/filterEquipmentCatalog'
 
+const PAGE_SIZE = 9
+
 function clampQuantityForItem(item, quantity) {
-  if (!item || item.availableStock <= 0) return 0
-  return Math.max(1, Math.min(quantity, item.availableStock))
+  if (!item || item.totalStock <= 0) return 0
+  return Math.max(1, Math.min(quantity, item.totalStock))
 }
 
 export function EquipmentRentalPage() {
@@ -30,7 +32,7 @@ export function EquipmentRentalPage() {
   const [pendingOrder, setPendingOrder] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [stockFilter, setStockFilter] = useState('all')
-  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [page, setPage] = useState(0)
 
   useEffect(() => {
     fetchEquipmentAdmin()
@@ -47,17 +49,22 @@ export function EquipmentRentalPage() {
       filterEquipmentCatalog({
         searchQuery,
         stockFilter,
-        categoryFilter,
         items: allEquipment,
       }),
-    [searchQuery, stockFilter, categoryFilter, allEquipment],
+    [searchQuery, stockFilter, allEquipment],
   )
 
   const hasActiveFilters = hasActiveEquipmentFilters({
     searchQuery,
     stockFilter,
-    categoryFilter,
   })
+
+  const totalPages = Math.max(1, Math.ceil(filteredEquipment.length / PAGE_SIZE))
+  const pagedEquipment = filteredEquipment.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+
+  useEffect(() => {
+    setPage(0)
+  }, [searchQuery, stockFilter])
 
   const selectedEquipment = useMemo(
     () =>
@@ -75,7 +82,7 @@ export function EquipmentRentalPage() {
 
   function toggleSelection(id) {
     const item = getItemById(id)
-    if (!item || item.availableStock <= 0) return
+    if (!item || item.totalStock <= 0) return
 
     setQuantitiesById((current) => {
       if (current[id]) {
@@ -208,15 +215,12 @@ export function EquipmentRentalPage() {
                   onSearchChange={setSearchQuery}
                   stockFilter={stockFilter}
                   onStockFilterChange={setStockFilter}
-                  categoryFilter={categoryFilter}
-                  onCategoryFilterChange={setCategoryFilter}
                   resultCount={filteredEquipment.length}
                   totalCount={allEquipment.length}
                   hasActiveFilters={hasActiveFilters}
                   onClearFilters={() => {
                     setSearchQuery('')
                     setStockFilter('all')
-                    setCategoryFilter('all')
                   }}
                 />
               </div>
@@ -231,20 +235,46 @@ export function EquipmentRentalPage() {
                   </p>
                 </div>
               ) : (
-                <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredEquipment.map((item) => (
-                    <li key={item.id} className="flex">
-                      <EquipmentCard
-                        type={item.type}
-                        availableStock={item.availableStock}
-                        image={item.image}
-                        imageAlt={item.imageAlt}
-                        selected={Boolean(quantitiesById[item.id])}
-                        onSelect={() => toggleSelection(item.id)}
-                      />
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {pagedEquipment.map((item) => (
+                      <li key={item.id} className="flex">
+                        <EquipmentCard
+                          type={item.type}
+                          totalStock={item.totalStock}
+                          image={item.image}
+                          imageAlt={item.imageAlt}
+                          selected={Boolean(quantitiesById[item.id])}
+                          onSelect={() => toggleSelection(item.id)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+
+                  {filteredEquipment.length > 0 && (
+                    <div className="mt-8 flex items-center justify-between border-t border-uach-purple-900/10 pt-4">
+                      <span className="font-praxis text-sm text-uach-purple-900/70">
+                        Página <strong>{page + 1}</strong> de <strong>{totalPages}</strong>
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          className="font-praxis rounded-md border border-uach-purple-900/20 px-4 py-1.5 text-sm text-uach-purple-900 transition-colors hover:bg-uach-purple-900/5 disabled:opacity-50 disabled:hover:bg-transparent"
+                          disabled={page === 0}
+                          onClick={() => setPage((p) => p - 1)}
+                        >
+                          Anterior
+                        </button>
+                        <button
+                          className="font-praxis rounded-md border border-uach-purple-900/20 px-4 py-1.5 text-sm text-uach-purple-900 transition-colors hover:bg-uach-purple-900/5 disabled:opacity-50 disabled:hover:bg-transparent"
+                          disabled={page >= totalPages - 1}
+                          onClick={() => setPage((p) => p + 1)}
+                        >
+                          Siguiente
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
