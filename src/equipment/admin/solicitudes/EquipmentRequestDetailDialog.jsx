@@ -3,7 +3,7 @@ import { IconClose } from '@/components/icons'
 import {
   formatEquipmentRequestDate,
   updateEquipmentRequestStatusAdmin,
-} from '@/equipment/admin/equipmentRequestsApi'
+} from '@/equipment/admin/solicitudes/equipmentRequestsApi'
 import {
   EQUIPMENT_REQUEST_STATUS,
   EQUIPMENT_REQUEST_STATUS_BADGE_CLASS,

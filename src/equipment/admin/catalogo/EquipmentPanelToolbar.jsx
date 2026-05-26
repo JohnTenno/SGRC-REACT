@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { IconClose, IconFilters, IconSearch } from '@/components/icons'
-import { EQUIPMENT_CATEGORIES } from '@/equipment/admin/equipmentAdminApi'
+import { EQUIPMENT_CATEGORIES } from '@/equipment/admin/catalogo/equipmentAdminApi'
 
 const STOCK_FILTER_OPTIONS = [
   { value: 'in_stock', label: 'Con stock' },

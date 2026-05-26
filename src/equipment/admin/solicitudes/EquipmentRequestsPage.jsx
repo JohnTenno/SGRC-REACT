@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { IconEye } from '@/components/icons'
-import { EquipmentRequestDetailDialog } from '@/equipment/admin/EquipmentRequestDetailDialog'
-import { EquipmentRequestsToolbar } from '@/equipment/admin/EquipmentRequestsToolbar'
+import { EquipmentRequestDetailDialog } from '@/equipment/admin/solicitudes/EquipmentRequestDetailDialog'
+import { EquipmentRequestsToolbar } from '@/equipment/admin/solicitudes/EquipmentRequestsToolbar'
 import {
   fetchEquipmentRentalRequestsAdmin,
   formatEquipmentRequestDate,
-} from '@/equipment/admin/equipmentRequestsApi'
+} from '@/equipment/admin/solicitudes/equipmentRequestsApi'
 import {
   EMPTY_DATE_TIME_FILTERS,
   filterEquipmentRequests,
   hasActiveEquipmentRequestFilters,
-} from '@/equipment/admin/equipmentRequestsFilters'
+} from '@/equipment/admin/solicitudes/equipmentRequestsFilters'
 import { EQUIPMENT_REQUEST_STATUS_BADGE_CLASS } from '@/equipment/home/equipmentRequestStatus'
 
 export function EquipmentRequestsPage() {

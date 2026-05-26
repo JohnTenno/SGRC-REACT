@@ -1,4 +1,4 @@
-import { getTutoringProfessorById } from '@/data/mockTutoringProfessors'
+import { getTutoringProfessorByEmployeeNumber } from '@/data/mockTutoringProfessors'
 import { formatTimeForDisplay } from '@/lib/reservationTimeline'
 import { formatTutoringDateLabel } from '@/tutoring/home/tutoringProfessorUtils'
 import {
@@ -11,7 +11,9 @@ import {
 } from '@/tutoring/home/tutoringRequestTimeline'
 
 export function MyTutoringRequestCard({ request, showNotification = true }) {
-  const professor = getTutoringProfessorById(request.professorId)
+  const professor = getTutoringProfessorByEmployeeNumber(
+    request.professorEmployeeNumber ?? request.professorId,
+  )
   const professorName = professor?.fullName ?? 'Docente'
   const location = professor?.tutoringLocation
   const notificationMessage = getTutoringRequestNotificationMessage(request)

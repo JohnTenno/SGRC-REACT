@@ -8,7 +8,7 @@ import { SuccessAnimation } from '@/components/animations/SuccessAnimation'
 import { HeroHeader } from '@/components/layout/HeroHeader'
 import { Navbar } from '@/components/layout/Navbar'
 import { getEquipmentById } from '@/equipment/home/mockEquipment'
-import { getEquipmentCatalog } from '@/equipment/admin/equipmentAdminApi'
+import { getEquipmentCatalog } from '@/equipment/admin/catalogo/equipmentAdminApi'
 import { createEquipmentRentalRequest } from '@/equipment/home/equipmentRentalApi'
 import {
   filterEquipmentCatalog,

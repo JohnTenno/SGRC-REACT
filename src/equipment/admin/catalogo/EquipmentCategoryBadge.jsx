@@ -1,4 +1,4 @@
-import { getEquipmentCategoryLabel } from '@/equipment/admin/equipmentAdminApi'
+import { getEquipmentCategoryLabel } from '@/equipment/admin/catalogo/equipmentAdminApi'
 
 const CATEGORY_STYLES = {
   audiovisual: 'border-violet-200 bg-violet-50 text-violet-900',

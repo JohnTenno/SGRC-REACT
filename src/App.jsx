@@ -16,8 +16,12 @@ import { ProfessorTutoringProfilePage } from '@/tutoring/home/ProfessorTutoringP
 import { DashboardShell } from '@/dashboard/DashboardShell'
 import { DashboardHomePage } from '@/dashboard/DashboardHomePage'
 import { CubiclesPanelPage } from '@/cubicles/admin/CubiclesPanelPage'
-import { EquipmentPanelPage } from '@/equipment/admin/EquipmentPanelPage'
-import { EquipmentRequestsPage } from '@/equipment/admin/EquipmentRequestsPage'
+import { EquipmentPanelPage } from '@/equipment/admin/catalogo/EquipmentPanelPage'
+import { EquipmentRequestsPage } from '@/equipment/admin/solicitudes/EquipmentRequestsPage'
+import { TutoringSubjectsPanelPage } from '@/tutoring/admin/materias/TutoringSubjectsPanelPage'
+import { TutoringProfessorsPanelPage } from '@/tutoring/admin/docentes/TutoringProfessorsPanelPage'
+import { TutoringTutorProfilePage } from '@/tutoring/admin/perfil-tutor/TutoringTutorProfilePage'
+import { TutoringPromoteTutorsPage } from '@/tutoring/admin/promover-tutores/TutoringPromoteTutorsPage'
 
 function App() {
   return (
@@ -31,6 +35,10 @@ function App() {
           <Route path="cubiculos-panel" element={<CubiclesPanelPage />} />
           <Route path="equipo-panel" element={<EquipmentPanelPage />} />
           <Route path="equipo-solicitudes" element={<EquipmentRequestsPage />} />
+          <Route path="tutorias-materias" element={<TutoringSubjectsPanelPage />} />
+          <Route path="tutorias-docentes" element={<TutoringProfessorsPanelPage />} />
+          <Route path="tutorias-perfil-docente" element={<TutoringTutorProfilePage />} />
+          <Route path="tutorias-promover-tutores" element={<TutoringPromoteTutorsPage />} />
         </Route>
         <Route path="/home" element={<HomePage />} />
         <Route path="/my-reservations" element={<MyReservationsPage />} />

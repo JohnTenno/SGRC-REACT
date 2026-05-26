@@ -96,13 +96,13 @@ export function ProfessorTutoringCatalogPage() {
               ) : (
                 <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredProfessors.map((professor) => (
-                    <li key={professor.id}>
+                    <li key={professor.employeeNumber}>
                       <TutoringProfessorCard
                         fullName={professor.fullName}
                         bio={professor.bio}
                         scheduleSummary={professor.scheduleSummary}
                         tutoringLocation={professor.tutoringLocation}
-                        to={`/professor-tutoring/${subject.id}/${professor.id}`}
+                        to={`/professor-tutoring/${subject.id}/${encodeURIComponent(professor.employeeNumber)}`}
                       />
                     </li>
                   ))}

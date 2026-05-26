@@ -1,4 +1,4 @@
-import { getEquipmentById } from '@/equipment/admin/equipmentAdminApi'
+import { getEquipmentById } from '@/equipment/admin/catalogo/equipmentAdminApi'
 import {
   DEFAULT_EQUIPMENT_IMAGE,
   DEFAULT_EQUIPMENT_IMAGE_ALT,
@@ -11,7 +11,7 @@ export {
   DEFAULT_EQUIPMENT_IMAGE_ALT,
   EQUIPMENT_CATEGORY_LABELS,
 }
-export { getEquipmentById, getEquipmentCatalog } from '@/equipment/admin/equipmentAdminApi'
+export { getEquipmentById, getEquipmentCatalog } from '@/equipment/admin/catalogo/equipmentAdminApi'
 
 export const MOCK_EQUIPMENT = EQUIPMENT_SEED
 

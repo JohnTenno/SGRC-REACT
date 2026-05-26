@@ -6,7 +6,7 @@ import { ReservationTimePicker } from '@/components/reservation/ReservationTimeP
 import { TutoringDateCarousel } from '@/tutoring/home/components/TutoringDateCarousel'
 import { TutoringProfessorHero } from '@/tutoring/home/components/TutoringProfessorHero'
 import {
-  getTutoringProfessorById,
+  getTutoringProfessorByEmployeeNumber,
   professorTeachesSubject,
 } from '@/data/mockTutoringProfessors'
 import { getTutoringSubjectById } from '@/data/mockTutoringSubjects'
@@ -30,12 +30,14 @@ const inputClass =
 
 export function ProfessorTutoringProfilePage() {
   const navigate = useNavigate()
-  const { subjectId: subjectIdParam, professorId: professorIdParam } = useParams()
+  const { subjectId: subjectIdParam, professorId: employeeNumberParam } = useParams()
 
   const subjectId = Number(subjectIdParam)
-  const professorId = Number(professorIdParam)
+  const employeeNumber = decodeURIComponent(employeeNumberParam ?? '').trim()
   const subjectRecord = Number.isFinite(subjectId) ? getTutoringSubjectById(subjectId) : null
-  const professor = Number.isFinite(professorId) ? getTutoringProfessorById(professorId) : null
+  const professor = employeeNumber
+    ? getTutoringProfessorByEmployeeNumber(employeeNumber)
+    : null
 
   const subject = subjectRecord?.name ?? ''
 
@@ -50,8 +52,6 @@ export function ProfessorTutoringProfilePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [submittedRequest, setSubmittedRequest] = useState(null)
-  //🤪🥸😳 asi como lo pidion tu senior estricto y mamon de jonh teno 🚀🚀🚀 (ntc jonh JAJAJAJA)
-
   const availableStartSlots = useMemo(() => {
     if (!professor) return []
     return getAvailableTutoringSlots(professor, reservationDate)
@@ -68,7 +68,7 @@ export function ProfessorTutoringProfilePage() {
   }, [professor])
 
   const formReady = Boolean(
-    professorId &&
+    employeeNumber &&
       subject &&
       reservationDate &&
       startTime &&
@@ -87,7 +87,11 @@ export function ProfessorTutoringProfilePage() {
     setEndTime((current) => (current && availableEndSlots.includes(current) ? current : ''))
   }, [availableEndSlots])
 
-  if (!subjectRecord || !professor || !professorTeachesSubject(professor.id, subjectRecord.id)) {
+  if (
+    !subjectRecord ||
+    !professor ||
+    !professorTeachesSubject(professor.employeeNumber, subjectRecord.id)
+  ) {
     return <Navigate to="/professor-tutoring" replace />
   }
 
@@ -120,7 +124,7 @@ export function ProfessorTutoringProfilePage() {
     event.preventDefault()
 
     const errors = validateTutoringRequest({
-      professorId,
+      professorEmployeeNumber: employeeNumber,
       subject,
       reservationDate,
       startTime,
@@ -138,7 +142,7 @@ export function ProfessorTutoringProfilePage() {
 
     try {
       const saved = await submitTutoringRequest({
-        professorId,
+        professorEmployeeNumber: employeeNumber,
         subject,
         reservationDate,
         startTime,
@@ -224,7 +228,12 @@ export function ProfessorTutoringProfilePage() {
             noValidate
             className="mx-auto flex w-full max-w-6xl flex-col gap-6"
           >
-            <input type="hidden" name="professorId" value={professorId} readOnly />
+            <input
+              type="hidden"
+              name="professorEmployeeNumber"
+              value={employeeNumber}
+              readOnly
+            />
             <input type="hidden" name="subject" value={subject} readOnly />
 
             <section className="rounded-xl border border-uach-purple-900/15 bg-uach-purple-50/30 p-3 shadow-sm sm:p-4">

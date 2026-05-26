@@ -1,7 +1,7 @@
 /**
  * @typedef {object} TutoringRequest
  * @property {number} id
- * @property {number} professorId
+ * @property {string} professorEmployeeNumber
  * @property {string} subject
  * @property {string} reservationDate
  * @property {string} startTime
@@ -24,7 +24,7 @@ export const TUTORING_REQUEST_STATUS = {
 const initialRequests = [
   {
     id: 1,
-    professorId: 1,
+    professorEmployeeNumber: '100001',
     subject: 'Cálculo diferencial',
     reservationDate: '2026-05-28',
     startTime: '10:00:00',
@@ -35,7 +35,7 @@ const initialRequests = [
   },
   {
     id: 2,
-    professorId: 2,
+    professorEmployeeNumber: '100002',
     subject: 'Cálculo diferencial',
     reservationDate: '2026-05-30',
     startTime: '09:00:00',
@@ -47,7 +47,7 @@ const initialRequests = [
   },
   {
     id: 3,
-    professorId: 3,
+    professorEmployeeNumber: '100003',
     subject: 'Programación orientada a objetos',
     reservationDate: '2026-05-27',
     startTime: '14:00:00',
@@ -60,7 +60,7 @@ const initialRequests = [
   },
   {
     id: 4,
-    professorId: 1,
+    professorEmployeeNumber: '100001',
     subject: 'Cálculo diferencial',
     reservationDate: '2026-05-15',
     startTime: '11:00:00',
@@ -81,7 +81,9 @@ let nextRequestId =
 export function createMockTutoringRequest(payload) {
   const request = {
     id: nextRequestId,
-    professorId: Number(payload.professorId),
+    professorEmployeeNumber: String(
+      payload.professorEmployeeNumber ?? payload.professorId ?? '',
+    ).trim(),
     subject: String(payload.subject).trim(),
     reservationDate: payload.reservationDate,
     startTime: payload.startTime,
@@ -100,8 +102,13 @@ export function getMockTutoringRequests() {
   return [...requestStore]
 }
 
-export function getMockTutoringRequestsByProfessorId(professorId) {
-  return requestStore.filter((request) => request.professorId === professorId)
+export function getMockTutoringRequestsByProfessorEmployeeNumber(employeeNumber) {
+  const normalized = String(employeeNumber ?? '').trim()
+  return requestStore.filter(
+    (request) =>
+      request.professorEmployeeNumber === normalized ||
+      String(request.professorId) === normalized,
+  )
 }
 
 export function getMockTutoringRequestById(id) {

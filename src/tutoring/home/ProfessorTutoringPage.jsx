@@ -4,15 +4,16 @@ import { TutoringSubjectCard } from '@/tutoring/home/components/TutoringSubjectC
 import { TutoringSubjectSearchBar } from '@/tutoring/home/components/TutoringSubjectSearchBar'
 import { HeroHeader } from '@/components/layout/HeroHeader'
 import { Navbar } from '@/components/layout/Navbar'
-import { MOCK_TUTORING_SUBJECTS } from '@/data/mockTutoringSubjects'
+import { getTutoringSubjectsCatalog } from '@/tutoring/admin/materias/tutoringSubjectsAdminApi'
 import { filterTutoringSubjects } from '@/tutoring/home/filterTutoringSubjects'
 
 export function ProfessorTutoringPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const allSubjects = useMemo(() => getTutoringSubjectsCatalog(), [])
 
   const filteredSubjects = useMemo(
-    () => filterTutoringSubjects({ searchQuery }),
-    [searchQuery],
+    () => filterTutoringSubjects({ searchQuery, items: allSubjects }),
+    [searchQuery, allSubjects],
   )
 
   return (
@@ -53,7 +54,7 @@ export function ProfessorTutoringPage() {
                 value={searchQuery}
                 onChange={setSearchQuery}
                 resultCount={filteredSubjects.length}
-                totalCount={MOCK_TUTORING_SUBJECTS.length}
+                totalCount={allSubjects.length}
               />
 
               {filteredSubjects.length === 0 ? (

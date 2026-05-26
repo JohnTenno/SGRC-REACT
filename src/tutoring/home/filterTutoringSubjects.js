@@ -1,8 +1,8 @@
-import { MOCK_TUTORING_SUBJECTS } from '@/data/mockTutoringSubjects'
+import { getTutoringSubjectsCatalog } from '@/tutoring/admin/materias/tutoringSubjectsAdminApi'
 
 export function filterTutoringSubjects({
   searchQuery = '',
-  items = MOCK_TUTORING_SUBJECTS,
+  items = getTutoringSubjectsCatalog(),
 }) {
   const query = searchQuery.trim().toLowerCase()
   if (!query) return items

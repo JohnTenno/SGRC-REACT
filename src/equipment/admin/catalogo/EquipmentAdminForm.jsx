@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { EQUIPMENT_CATEGORIES } from '@/equipment/admin/equipmentAdminApi'
+import { EQUIPMENT_CATEGORIES } from '@/equipment/admin/catalogo/equipmentAdminApi'
 
 const inputClass =
   'font-praxis w-full rounded-lg border border-uach-purple-900/20 px-3 py-2.5 text-sm text-uach-purple-900 focus:border-uach-gold-400 focus:outline-none focus:ring-2 focus:ring-uach-gold-400/25'

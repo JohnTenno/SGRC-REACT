@@ -6,7 +6,7 @@ export function getAvailableTutoringSlots(professor, isoDate) {
     return []
   }
 
-  const booked = getBookedTutoringSlots(professor.id, isoDate, professor.tutoringHourSlots)
+  const booked = getBookedTutoringSlots(professor.employeeNumber, isoDate, professor.tutoringHourSlots)
 
   const today = new Date().toISOString().slice(0, 10)
   let pastSlots = new Set()

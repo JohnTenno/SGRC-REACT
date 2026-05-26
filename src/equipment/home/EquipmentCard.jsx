@@ -55,11 +55,6 @@ export function EquipmentCard({
             <IconCheck className="size-6 stroke-[2.5] text-uach-purple-950" aria-hidden />
           </div>
         ) : null}
-        {outOfStock ? (
-          <span className="font-praxis absolute bottom-3 left-3 rounded-full bg-uach-purple-950/85 px-3 py-1 text-xs font-semibold text-white">
-            Sin stock
-          </span>
-        ) : null}
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col justify-center p-4">

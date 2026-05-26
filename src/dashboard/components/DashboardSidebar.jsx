@@ -127,8 +127,8 @@ export function DashboardSidebar({ collapsed, onToggle }) {
 
   return (
     <aside
-      className={`hidden h-full min-h-[100dvh] min-h-screen shrink-0 flex-col bg-uach-purple-950 text-white transition-[width] duration-300 ease-out md:flex ${
-        collapsed ? 'w-[4.5rem]' : 'w-64 lg:w-72'
+      className={`hidden h-[100dvh] max-h-[100dvh] shrink-0 grow-0 flex-col overflow-hidden bg-uach-purple-950 text-white transition-[width] duration-300 ease-out md:flex ${
+        collapsed ? 'w-[4.5rem]' : 'w-64'
       }`}
       aria-label="Menú del dashboard"
     >

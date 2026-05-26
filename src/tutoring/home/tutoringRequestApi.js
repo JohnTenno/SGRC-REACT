@@ -38,7 +38,7 @@ export function getTutoringEndTimeOptions(startTime, availableStartSlots = []) {
 }
 
 export function buildTutoringRequestPayload({
-  professorId,
+  professorEmployeeNumber,
   subject,
   reservationDate,
   startTime,
@@ -46,7 +46,7 @@ export function buildTutoringRequestPayload({
   topic,
 }) {
   return {
-    professorId: Number(professorId),
+    professorEmployeeNumber: String(professorEmployeeNumber ?? '').trim(),
     subject: String(subject).trim(),
     reservationDate,
     startTime: formatTimeToBackend(startTime),
@@ -71,8 +71,8 @@ export async function fetchMyTutoringRequests() {
 export function validateTutoringRequest(fields) {
   const errors = {}
 
-  if (!Number.isFinite(fields.professorId) || fields.professorId <= 0) {
-    errors.professorId = 'Selecciona un docente válido.'
+  if (!String(fields.professorEmployeeNumber ?? '').trim()) {
+    errors.professorEmployeeNumber = 'Selecciona un docente válido.'
   }
 
   if (!fields.subject?.trim()) {

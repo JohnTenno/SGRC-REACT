@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { EquipmentAdminCard } from '@/equipment/admin/EquipmentAdminCard'
-import { EquipmentAdminForm } from '@/equipment/admin/EquipmentAdminForm'
-import { EquipmentPanelToolbar } from '@/equipment/admin/EquipmentPanelToolbar'
+import { EquipmentAdminCard } from '@/equipment/admin/catalogo/EquipmentAdminCard'
+import { EquipmentAdminForm } from '@/equipment/admin/catalogo/EquipmentAdminForm'
+import { EquipmentPanelToolbar } from '@/equipment/admin/catalogo/EquipmentPanelToolbar'
 import {
   createEquipmentAdmin,
   deleteEquipmentAdmin,
   fetchEquipmentAdmin,
   getEquipmentCategoryLabel,
   updateEquipmentAdmin,
-} from '@/equipment/admin/equipmentAdminApi'
+} from '@/equipment/admin/catalogo/equipmentAdminApi'
 
 export function EquipmentPanelPage() {
   const [equipment, setEquipment] = useState([])

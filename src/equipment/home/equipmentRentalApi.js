@@ -1,4 +1,4 @@
-import { saveEquipmentRentalRequest } from '@/equipment/admin/equipmentRequestsApi'
+import { saveEquipmentRentalRequest } from '@/equipment/admin/solicitudes/equipmentRequestsApi'
 import { resolveEquipmentSelections } from '@/equipment/home/mockEquipment'
 import { getAuthSession } from '@/lib/authSession'
 

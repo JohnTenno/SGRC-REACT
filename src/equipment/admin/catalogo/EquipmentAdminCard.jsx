@@ -4,8 +4,7 @@ import {
   EQUIPMENT_CARD_IMAGE,
   equipmentCardClasses as c,
 } from '@/equipment/home/equipmentCardTheme'
-import { EquipmentCategoryBadge } from '@/equipment/admin/EquipmentCategoryBadge'
-import { EquipmentStockBadge } from '@/equipment/admin/EquipmentStockBadge'
+import { EquipmentCategoryBadge } from '@/equipment/admin/catalogo/EquipmentCategoryBadge'
 
 function resolveAdminImageSrc(image) {
   const trimmed = typeof image === 'string' ? image.trim() : ''
@@ -67,9 +66,8 @@ export function EquipmentAdminCard({
           imageAlt={equipment.imageAlt}
           type={equipment.type}
         />
-        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+        <div className="absolute top-3 left-3 z-10">
           <EquipmentCategoryBadge category={equipment.category} />
-          <EquipmentStockBadge availableStock={equipment.availableStock} />
         </div>
       </div>
 

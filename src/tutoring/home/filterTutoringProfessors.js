@@ -1,8 +1,8 @@
-import { MOCK_TUTORING_PROFESSORS } from '@/data/mockTutoringProfessors'
+import { getTutoringProfessorsForDisplay } from '@/tutoring/home/tutoringProfessors'
 
 export function getTutoringProfessorsBySubjectId({
   subjectId,
-  items = MOCK_TUTORING_PROFESSORS,
+  items = getTutoringProfessorsForDisplay(),
 }) {
   return items.filter((professor) => professor.subjectIds.includes(subjectId))
 }

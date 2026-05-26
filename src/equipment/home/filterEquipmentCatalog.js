@@ -1,4 +1,4 @@
-import { getEquipmentCatalog } from '@/equipment/admin/equipmentAdminApi'
+import { getEquipmentCatalog } from '@/equipment/admin/catalogo/equipmentAdminApi'
 
 /**
  * @param {object} options
