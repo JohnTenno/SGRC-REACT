@@ -38,13 +38,39 @@ async function parseResponse(response) {
   return contentType.includes('application/json') ? response.json() : null
 }
 
-export async function fetchCubiclesAdmin() {
-  const response = await fetch('/api/cubicles', { headers: authHeaders() })
+export async function fetchCubiclesAdmin(params = {}) {
+  const { page = 0, size = 10, search, statusFilters, minCapacity } = params
+
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+  })
+
+  if (search && search.trim() !== '') {
+    queryParams.append('search', search.trim())
+  }
+
+  if (minCapacity && minCapacity > 0) {
+    queryParams.append('minCapacity', minCapacity.toString())
+  }
+
+  if (statusFilters && statusFilters.length > 0) {
+    statusFilters.forEach((s) => queryParams.append('status', s))
+  }
+
+  const response = await fetch(`/api/cubicles?${queryParams.toString()}`, { 
+    headers: authHeaders() 
+  })
   const data = await parseResponse(response)
+  
   if (!response.ok) {
     throw { status: response.status, message: data?.message ?? 'No se pudieron cargar los cubículos.' }
   }
-  return (Array.isArray(data) ? data : []).map(normalizeCubicle)
+
+  return {
+    ...data,
+    content: (Array.isArray(data?.content) ? data.content : []).map(normalizeCubicle),
+  }
 }
 
 export async function createCubicleAdmin({ identifier, capacity, status, logoUrl = null }) {
