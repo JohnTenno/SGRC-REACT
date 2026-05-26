@@ -8,6 +8,7 @@ import { MyTutoringsPage } from '@/app/components/tutoring/MyTutoringsPage'
 import { MyReservationsPage } from '@/app/components/cubicles/MyReservationsPage'
 import { EquipmentRentalOrderPage } from '@/app/components/equipment/EquipmentRentalOrderPage'
 import { EquipmentRentalPage } from '@/app/components/equipment/EquipmentRentalPage'
+import { MyEquipmentRequestsPage } from '@/app/components/equipment/MyEquipmentRequestsPage'
 import { CubicleReservationFormPage } from '@/app/components/cubicles/CubicleReservationFormPage'
 import { CubicleReservationPage } from '@/app/components/cubicles/CubicleReservationPage'
 import { ProfessorTutoringCatalogPage } from '@/app/components/tutoring/ProfessorTutoringCatalogPage'
@@ -42,13 +43,14 @@ function App() {
         </Route>
         <Route path="/home" element={<HomePage />} />
         <Route path="/my-reservations" element={<MyReservationsPage />} />
+        <Route path="/my-equipment-requests" element={<MyEquipmentRequestsPage />} />
         <Route path="/my-tutorings" element={<MyTutoringsPage />} />
         <Route path="/check-in/:id" element={<CheckInPage />} />
         <Route path="/lobby/:cubicleId" element={<LobbyCheckInQrPage />} />
         <Route path="/cubicle-reservation" element={<CubicleReservationPage />} />
         <Route path="/cubicle-reservation/:id" element={<CubicleReservationFormPage />} />
         <Route path="/equipment-rental" element={<EquipmentRentalPage />} />
-        <Route path="/equipment-rental/order" element={<EquipmentRentalOrderPage />} />
+        <Route path="/equipment-rental/order/:requestId" element={<EquipmentRentalOrderPage />} />
         <Route path="/professor-tutoring" element={<ProfessorTutoringPage />} />
         <Route path="/professor-tutoring/:subjectId" element={<ProfessorTutoringCatalogPage />} />
         <Route

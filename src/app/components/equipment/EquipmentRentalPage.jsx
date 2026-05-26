@@ -142,7 +142,7 @@ export function EquipmentRentalPage() {
   function handleSuccessComplete() {
     setShowSuccess(false)
     setQuantitiesById({})
-    navigate('/equipment-rental/order', { state: { order: pendingOrder } })
+    navigate(`/equipment-rental/order/${pendingOrder.id}`, { state: { order: pendingOrder } })
     setPendingOrder(null)
   }
 

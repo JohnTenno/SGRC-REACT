@@ -3,6 +3,15 @@ import {
   EQUIPMENT_REQUEST_STATUS,
   getEquipmentRequestStatusLabel,
 } from '@/app/components/equipment/equipmentRequestStatus'
+import {
+  getEquipmentRentalRequestById,
+  getCurrentStudentEnrollment,
+  listEquipmentRentalRequestsAdmin,
+  listEquipmentRentalRequestsForStudent,
+  mergeEquipmentRentalRequestsFromApi,
+  saveEquipmentRentalRequest,
+  updateEquipmentRentalRequestStatus,
+} from '@/app/services/equipment/equipmentRentalRequestsStore'
 
 export { EQUIPMENT_REQUEST_STATUS }
 
@@ -33,6 +42,7 @@ function normalizeRequest(raw) {
     status: raw.status,
     statusLabel: getEquipmentRequestStatusLabel(raw.status),
     createdAt: raw.createdAt ?? null,
+    statusUpdatedAt: raw.statusUpdatedAt ?? null,
     pickupLocation: raw.pickupLocation ?? '',
     studentName: raw.studentName ?? '—',
     items,
@@ -41,18 +51,111 @@ function normalizeRequest(raw) {
   }
 }
 
+export function toEquipmentOrder(raw) {
+  const normalized = normalizeRequest(raw)
+  return {
+    id: normalized.id,
+    status: normalized.status,
+    createdAt: normalized.createdAt,
+    statusUpdatedAt: normalized.statusUpdatedAt,
+    pickupLocation: normalized.pickupLocation,
+    items: normalized.items.map((item) => ({
+      id: item.id ?? item.equipmentId,
+      type: item.type,
+      quantity: item.quantity ?? 1,
+    })),
+  }
+}
+
+async function tryFetchMyFromApi(token, enrollment) {
+  try {
+    const response = await fetch('/api/equipment-rental-requests/my', {
+      headers: authHeaders(token),
+    })
+    if (!response.ok) return null
+    const data = await parseJson(response)
+    const list = Array.isArray(data) ? data : []
+    mergeEquipmentRentalRequestsFromApi(list, enrollment)
+    return list
+  } catch {
+    return null
+  }
+}
+
+async function tryFetchByIdFromApi(token, id, enrollment) {
+  try {
+    const response = await fetch(`/api/equipment-rental-requests/${id}`, {
+      headers: authHeaders(token),
+    })
+    if (!response.ok) return null
+    const data = await parseJson(response)
+    if (!data?.id) return null
+    mergeEquipmentRentalRequestsFromApi([data], enrollment)
+    return data
+  } catch {
+    return null
+  }
+}
+
+async function tryPatchStatusFromApi(token, id, status) {
+  try {
+    const response = await fetch(`/api/equipment-rental-requests/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+      body: JSON.stringify({ status }),
+    })
+    if (!response.ok) return null
+    const data = await parseJson(response)
+    if (!data?.id) return null
+    saveEquipmentRentalRequest(data)
+    return data
+  } catch {
+    return null
+  }
+}
+
+export async function fetchMyEquipmentRentalRequests() {
+  const session = getAuthSession()
+  if (!session?.token) throw { status: 401, message: 'Debes iniciar sesión.' }
+  const enrollment = session.user?.enrollment ?? getCurrentStudentEnrollment()
+
+  await tryFetchMyFromApi(session.token, enrollment)
+
+  return listEquipmentRentalRequestsForStudent(enrollment).map(normalizeRequest)
+}
+
+export async function fetchEquipmentRentalRequestById(id) {
+  const session = getAuthSession()
+  if (!session?.token) throw { status: 401, message: 'Debes iniciar sesión.' }
+  const enrollment = session.user?.enrollment ?? getCurrentStudentEnrollment()
+
+  await tryFetchByIdFromApi(session.token, id, enrollment)
+
+  const request = getEquipmentRentalRequestById(id, enrollment)
+  if (!request) {
+    throw { status: 404, message: 'No se encontró la solicitud.' }
+  }
+  return toEquipmentOrder(request)
+}
+
 export async function fetchEquipmentRentalRequestsAdmin() {
   const session = getAuthSession()
   if (!session?.token) throw { status: 401, message: 'Debes iniciar sesión.' }
-  const response = await fetch('/api/equipment-rental-requests', {
-    headers: authHeaders(session.token),
-  })
-  if (!response.ok) {
-    const data = await parseJson(response)
-    throw { status: response.status, message: data?.message ?? 'No se pudieron cargar las solicitudes.' }
+
+  try {
+    const response = await fetch('/api/equipment-rental-requests', {
+      headers: authHeaders(session.token),
+    })
+    if (response.ok) {
+      const data = await parseJson(response)
+      const list = Array.isArray(data) ? data : []
+      mergeEquipmentRentalRequestsFromApi(list)
+    }
+  } catch {
+    /* usar almacén local si el API no está disponible */
   }
-  const data = await parseJson(response)
-  return (Array.isArray(data) ? data : []).map(normalizeRequest)
+
+  return listEquipmentRentalRequestsAdmin().map(normalizeRequest)
 }
 
 export async function updateEquipmentRequestStatusAdmin(id, status) {
@@ -62,14 +165,15 @@ export async function updateEquipmentRequestStatusAdmin(id, status) {
   const validStatuses = Object.values(EQUIPMENT_REQUEST_STATUS)
   if (!validStatuses.includes(status)) throw { message: 'Estatus no válido.' }
 
-  const response = await fetch(`/api/equipment-rental-requests/${id}/status`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...authHeaders(session.token) },
-    body: JSON.stringify({ status }),
-  })
-  const data = await parseJson(response)
-  if (!response.ok) throw { status: response.status, message: data?.message ?? 'No se pudo actualizar el estatus.' }
-  return normalizeRequest(data)
+  const fromApi = await tryPatchStatusFromApi(session.token, id, status)
+  if (fromApi) return normalizeRequest(fromApi)
+
+  try {
+    const updated = updateEquipmentRentalRequestStatus(id, status)
+    return normalizeRequest(updated)
+  } catch (error) {
+    throw { message: error?.message ?? 'No se pudo actualizar el estatus.' }
+  }
 }
 
 export function formatEquipmentRequestDate(isoDate) {

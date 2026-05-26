@@ -1,13 +1,23 @@
-﻿import { useRef, useState } from 'react'
-import { Link, Navigate, useLocation } from 'react-router-dom'
-import { IconDownload } from '@/app/components/common/icons'
+﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
+import { IconChevron, IconDownload } from '@/app/components/common/icons'
 import { EquipmentOrderExportTemplate } from '@/app/components/equipment/EquipmentOrderExportTemplate'
-import { Navbar } from '@/app/components/layout/Navbar'
 import {
-  EQUIPMENT_PICKUP_LOCATION,
+  getEquipmentRequestStatusBannerClass,
+  getEquipmentRequestStatusMessage,
+} from '@/app/components/equipment/equipmentRequestTimeline'
+import { Navbar } from '@/app/components/layout/Navbar'
+import { useRefetchOnWindowFocus } from '@/app/hooks/useRefetchOnWindowFocus'
+import {
+  EQUIPMENT_REQUEST_STATUS_BADGE_CLASS,
   EQUIPMENT_REQUEST_STATUS,
   getEquipmentRequestStatusLabel,
-} from '@/app/services/equipment/rental.service'
+} from '@/app/components/equipment/equipmentRequestStatus'
+import {
+  fetchEquipmentRentalRequestById,
+  formatEquipmentRequestDate,
+} from '@/app/services/equipment/requests.service'
+import { EQUIPMENT_PICKUP_LOCATION } from '@/app/services/equipment/rental.service'
 import {
   downloadElementAsPdf,
   downloadElementAsPng,
@@ -25,19 +35,88 @@ function formatOrderDate(isoDate) {
 }
 
 export function EquipmentRentalOrderPage() {
+  const { requestId } = useParams()
   const location = useLocation()
-  const order = location.state?.order
+  const stateOrder = location.state?.order
+  const parsedId = Number(requestId)
   const exportTemplateRef = useRef(null)
+  const [order, setOrder] = useState(() =>
+    stateOrder?.id === parsedId && stateOrder?.items?.length ? stateOrder : null,
+  )
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
   const [isExporting, setIsExporting] = useState(false)
   const [exportError, setExportError] = useState(null)
 
-  if (!order?.id || !order?.items?.length) {
-    return <Navigate to="/equipment-rental" replace />
+  const loadOrder = useCallback(async () => {
+    if (!Number.isInteger(parsedId) || parsedId < 1) {
+      setLoadError('Folio de solicitud no válido.')
+      setIsLoading(false)
+      return
+    }
+
+    setLoadError(null)
+    try {
+      const data = await fetchEquipmentRentalRequestById(parsedId)
+      setOrder(data)
+    } catch (error) {
+      setLoadError(error?.message ?? 'No se pudo cargar la solicitud.')
+      setOrder(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [parsedId])
+
+  useEffect(() => {
+    setIsLoading(true)
+    loadOrder()
+  }, [loadOrder])
+
+  useRefetchOnWindowFocus(loadOrder)
+
+  if (!requestId) {
+    return <Navigate to="/my-equipment-requests" replace />
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-white">
+        <Navbar />
+        <main className="page-shell flex flex-1 flex-col justify-center py-16">
+          <p className="font-praxis text-center text-sm text-uach-purple-900/65" aria-busy="true">
+            Cargando tu orden…
+          </p>
+        </main>
+      </div>
+    )
+  }
+
+  if (loadError || !order?.id || !order?.items?.length) {
+    return (
+      <div className="flex min-h-screen flex-col bg-white">
+        <Navbar />
+        <main className="page-shell flex flex-1 flex-col items-center justify-center gap-4 py-16 text-center">
+          <p className="font-praxis text-sm text-red-600" role="alert">
+            {loadError ?? 'No se encontró la solicitud.'}
+          </p>
+          <Link to="/my-equipment-requests" className="button-primary">
+            Ir a mi equipo
+          </Link>
+        </main>
+      </div>
+    )
   }
 
   const totalUnits = order.items.reduce((sum, item) => sum + item.quantity, 0)
   const statusLabel = getEquipmentRequestStatusLabel(order.status)
+  const statusMessage = getEquipmentRequestStatusMessage(order.status)
+  const statusBannerClass = getEquipmentRequestStatusBannerClass(order.status)
+  const statusBadgeClass =
+    EQUIPMENT_REQUEST_STATUS_BADGE_CLASS[order.status] ??
+    'bg-uach-purple-900/8 text-uach-purple-900/70'
   const isPendingPickup = order.status === EQUIPMENT_REQUEST_STATUS.PENDING_PICKUP
+  const isAwaitingReturn = order.status === EQUIPMENT_REQUEST_STATUS.AWAITING_RETURN
+  const isCompleted = order.status === EQUIPMENT_REQUEST_STATUS.COMPLETED
   const exportBaseName = `solicitud-equipo-folio-${order.id}`
 
   async function handleExport(type) {
@@ -81,13 +160,16 @@ export function EquipmentRentalOrderPage() {
           <span className="mx-2" aria-hidden="true">
             /
           </span>
-          <Link to="/equipment-rental" className="transition hover:text-uach-purple-900">
-            Renta de equipo
+          <Link
+            to="/my-equipment-requests"
+            className="transition hover:text-uach-purple-900"
+          >
+            Mi equipo
           </Link>
           <span className="mx-2" aria-hidden="true">
             /
           </span>
-          <span className="text-uach-purple-900">Orden de solicitud</span>
+          <span className="text-uach-purple-900">Orden #{order.id}</span>
         </nav>
 
         <div aria-label="Comprobante de solicitud de equipo">
@@ -106,11 +188,7 @@ export function EquipmentRentalOrderPage() {
                 </span>
               </p>
               <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  isPendingPickup
-                    ? 'bg-amber-50 text-amber-800'
-                    : 'bg-uach-purple-900/8 text-uach-purple-900/70'
-                }`}
+                className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusBadgeClass}`}
               >
                 {statusLabel}
               </span>
@@ -120,7 +198,22 @@ export function EquipmentRentalOrderPage() {
                 {formatOrderDate(order.createdAt)}
               </p>
             ) : null}
+            {order.statusUpdatedAt ? (
+              <p className="font-praxis mt-1 text-xs text-uach-purple-900/55">
+                Estatus actualizado: {formatEquipmentRequestDate(order.statusUpdatedAt)}
+              </p>
+            ) : null}
           </header>
+
+          {statusMessage ? (
+            <section
+              className={`mt-6 rounded-xl border p-5 font-praxis text-sm leading-relaxed ${statusBannerClass}`}
+              role="status"
+            >
+              <p className="font-alverata font-semibold">{statusLabel}</p>
+              <p className="mt-2">{statusMessage}</p>
+            </section>
+          ) : null}
 
           <section className="mt-8 overflow-hidden rounded-xl border border-uach-purple-900/15 bg-white shadow-md">
             <div className="border-b border-uach-purple-900/10 bg-uach-purple-50/50 px-6 py-4">
@@ -132,7 +225,7 @@ export function EquipmentRentalOrderPage() {
             <ul className="divide-y divide-uach-purple-900/10">
               {order.items.map((item) => (
                 <li
-                  key={item.id}
+                  key={item.id ?? item.type}
                   className="font-praxis flex items-center justify-between gap-4 px-6 py-4 text-sm"
                 >
                   <span className="font-medium text-uach-purple-900">{item.type}</span>
@@ -150,18 +243,43 @@ export function EquipmentRentalOrderPage() {
             </div>
           </section>
 
-          <section className="mt-8 rounded-xl border-2 border-uach-gold-500/40 bg-uach-gold-400/10 p-6">
-            <h2 className="font-alverata text-lg font-semibold text-uach-purple-900">
-              ¿Dónde recoger tu equipo?
-            </h2>
-            <p className="font-praxis mt-3 text-base leading-relaxed text-uach-purple-900">
-              {order.pickupLocation ?? EQUIPMENT_PICKUP_LOCATION}
-            </p>
-            <p className="font-praxis mt-3 text-sm text-uach-purple-900/65">
-              Presenta esta orden en el mostrador. El personal validará tu solicitud y te
-              entregará el material.
-            </p>
-          </section>
+          {isPendingPickup ? (
+            <section className="mt-8 rounded-xl border-2 border-uach-gold-500/40 bg-uach-gold-400/10 p-6">
+              <h2 className="font-alverata text-lg font-semibold text-uach-purple-900">
+                ¿Dónde recoger tu equipo?
+              </h2>
+              <p className="font-praxis mt-3 text-base leading-relaxed text-uach-purple-900">
+                {order.pickupLocation ?? EQUIPMENT_PICKUP_LOCATION}
+              </p>
+              <p className="font-praxis mt-3 text-sm text-uach-purple-900/65">
+                Presenta esta orden en el mostrador. El personal validará tu solicitud y te
+                entregará el material.
+              </p>
+            </section>
+          ) : null}
+
+          {isAwaitingReturn ? (
+            <section className="mt-8 rounded-xl border-2 border-sky-300/50 bg-sky-50 p-6">
+              <h2 className="font-alverata text-lg font-semibold text-uach-purple-900">
+                Devolución pendiente
+              </h2>
+              <p className="font-praxis mt-3 text-base leading-relaxed text-uach-purple-900">
+                Entrega el equipo en {order.pickupLocation ?? EQUIPMENT_PICKUP_LOCATION}. Cuando el
+                administrador confirme la devolución, el estatus pasará a completada.
+              </p>
+            </section>
+          ) : null}
+
+          {isCompleted ? (
+            <section className="mt-8 rounded-xl border-2 border-emerald-300/50 bg-emerald-50 p-6">
+              <h2 className="font-alverata text-lg font-semibold text-uach-purple-900">
+                Solicitud completada
+              </h2>
+              <p className="font-praxis mt-3 text-base leading-relaxed text-uach-purple-900">
+                La biblioteca registró la devolución de tu equipo. Esta orden quedó cerrada.
+              </p>
+            </section>
+          ) : null}
         </div>
 
         <section className="flex flex-col gap-3" aria-label="Descargar comprobante">
@@ -195,20 +313,13 @@ export function EquipmentRentalOrderPage() {
           ) : null}
         </section>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Link
-            to="/equipment-rental"
-            className="button-primary w-full text-center sm:w-auto sm:min-w-[14rem]"
-          >
-            Nueva solicitud
-          </Link>
-          <Link
-            to="/home"
-            className="button-secondary w-full text-center sm:w-auto sm:min-w-[14rem]"
-          >
-            Volver al inicio
-          </Link>
-        </div>
+        <Link
+          to="/my-equipment-requests"
+          className="button-primary inline-flex w-full items-center justify-center gap-2 sm:w-auto sm:min-w-[10rem]"
+        >
+          <IconChevron direction="left" className="size-5 shrink-0" aria-hidden />
+          Volver
+        </Link>
       </main>
     </div>
   )

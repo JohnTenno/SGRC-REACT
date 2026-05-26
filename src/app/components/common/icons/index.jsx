@@ -6,6 +6,7 @@ import {
   HiOutlineBookOpen,
   HiOutlineBuildingOffice2,
   HiOutlineCalendarDays,
+  HiOutlineClipboardDocumentList,
   HiOutlineCheck,
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
@@ -53,6 +54,7 @@ const NAV_ICON_MAP = {
   tutoring: HiOutlineAcademicCap,
   'my-tutorings': HiOutlineBookOpen,
   reservations: HiOutlineCalendarDays,
+  'my-equipment': HiOutlineClipboardDocumentList,
 }
 
 export function NavIcon({ name, className = 'size-5 shrink-0' }) {

@@ -1,7 +1,11 @@
 ﻿import { Link, useLocation } from 'react-router-dom'
-import { isNavLinkActive, NAV_LINKS, NavIcon } from '@/app/components/layout/navConfig'
+import { isNavLinkActive, NavIcon } from '@/app/components/layout/navConfig'
 
-const QUICK_MENU_LINKS = NAV_LINKS.filter((item) => item.to !== '/home')
+const QUICK_MENU_LINKS = [
+  { to: '/my-tutorings', label: 'Mis tutorías', icon: 'my-tutorings', end: true },
+  { to: '/my-reservations', label: 'Mis reservas', icon: 'reservations', end: true },
+  { to: '/my-equipment-requests', label: 'Mi equipo', icon: 'my-equipment', end: true },
+]
 
 const quickLinkClass =
   'font-praxis flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-3.5 text-sm font-medium text-white backdrop-blur-sm transition hover:border-uach-gold-400/50 hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-uach-gold-400 sm:px-4 sm:py-4 sm:text-base'
@@ -28,7 +32,7 @@ export function QuickMenu() {
       className="flex w-full max-w-4xl flex-col gap-3"
       aria-label="Menú rápido"
     >
-      <p className="font-praxis text-sm font-medium uppercase tracking-wider text-uach-gold-400">
+      <p className="font-alverata text-lg font-semibold uppercase tracking-wide text-uach-gold-400 sm:text-xl">
         Menú rápido
       </p>
       <ul className="grid w-full grid-cols-3 gap-3">
