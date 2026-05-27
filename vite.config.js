@@ -10,13 +10,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   define: { global: 'globalThis' },
   plugins: [react(), tailwindcss(), basicSsl()],
+  build: {
+    outDir: '../SGRC-SPRING/src/main/resources/static',
+    emptyOutDir: true,
+  },
   server: {
     host: true,
     port: 5173,
     https: true,
     proxy: {
-      '/api': { target: 'http://localhost:3000', changeOrigin: true },
-      '/ws': { target: 'ws://localhost:3000', changeOrigin: true, ws: true },
+      '/api': { target: 'https://localhost:3000', changeOrigin: true, secure: false },
+      '/ws': { target: 'wss://localhost:3000', changeOrigin: true, ws: true, secure: false },
     },
   },
   resolve: {
