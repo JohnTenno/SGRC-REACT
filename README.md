@@ -1,22 +1,30 @@
-# SGRC — Frontend
+# SGRC — Frontend (React)
 
-Aplicación web del **Sistema de Gestión de Recursos (SGRC)** de la Universidad Autónoma de Chihuahua. Permite reservar cubículos, solicitar renta de equipo y consultar reservas, con interfaz alineada a la identidad visual UACH.
+Interfaz web del **Sistema de Gestión de Recursos del Centro de Cómputo — UACH**.  
+En producción, este código se compila y sirve desde el backend Spring Boot.  
+Este repositorio es el entorno de **desarrollo** del frontend.
 
-Stack: **React 19**, **Vite 8**, **React Router**, **Tailwind CSS 4**.
+Stack: **React 19**, **Vite 8**, **React Router 7**, **Tailwind CSS 4**.
+
+---
 
 ## Requisitos previos
 
-- [Node.js](https://nodejs.org/) **18 o superior** (recomendado: 20 LTS)
-- [pnpm](https://pnpm.io/installation) **9 o superior**
+| Herramienta | Versión mínima | Cómo instalar |
+|-------------|---------------|---------------|
+| Node.js | 20 LTS | [nodejs.org](https://nodejs.org/) |
+| pnpm | 9 | `npm install -g pnpm` |
 
-Comprueba las versiones:
+Verifica que estén instalados:
 
 ```bash
-node -v
-pnpm -v
+node -v    # debe mostrar v20.x.x o superior
+pnpm -v    # debe mostrar 9.x.x o superior
 ```
 
-## Clonar e instalar
+---
+
+## Instalación
 
 ```bash
 git clone <url-del-repositorio>
@@ -24,98 +32,105 @@ cd SGRC-REACT
 pnpm install
 ```
 
-Si `pnpm install` falla por scripts de compilación ignorados (`core-js`), el proyecto ya declara el permiso en `pnpm-workspace.yaml`. Vuelve a ejecutar:
+---
 
-```bash
-pnpm install
-```
+## Modo desarrollo
 
-## Poner en marcha (desarrollo)
+Requiere tener el backend **SGRC-SPRING corriendo** en `https://localhost:3000` (ver su README).
 
 ```bash
 pnpm dev
 ```
 
-Abre en el navegador la URL que muestre la terminal (por defecto [http://localhost:5173](http://localhost:5173)).
+Abre **`https://localhost:5173`** en el navegador.  
+Acepta el certificado autofirmado si el browser lo pide.
 
-## Otros comandos
+El servidor de desarrollo hace proxy automático:
+- `/api/*` → `https://localhost:3000`
+- `/ws/*` → `wss://localhost:3000`
 
-| Comando        | Descripción                          |
-|----------------|--------------------------------------|
-| `pnpm dev`     | Servidor de desarrollo con recarga   |
-| `pnpm build`   | Build de producción en `dist/`       |
-| `pnpm preview` | Vista previa del build de producción |
-| `pnpm lint`    | Revisión con ESLint                  |
+---
 
-## Modo desarrollo (mocks)
+## Build para producción
 
-Sin backend, la app usa datos simulados por defecto. No hace falta archivo `.env` para empezar.
+Este comando compila el frontend y deposita los archivos directamente en Spring Boot:
 
-Opcionalmente puedes crear un `.env` en la raíz del proyecto:
-
-```env
-# Usar mocks (por defecto si no defines el archivo o no pones 'false')
-VITE_USE_MOCK_LOGIN=true
-VITE_USE_MOCK_RESERVATIONS=true
+```bash
+pnpm build
 ```
 
-Para conectar con API real, pon ambas en `false` y configura el proxy o la URL del backend según tu entorno.
+Los archivos van a `../SGRC-SPRING/src/main/resources/static/`.  
+Spring Boot los sirve automáticamente en `https://localhost:3000`.
 
-### Credenciales de prueba (login mock)
+> **Nota:** `./restart.sh` del proyecto Spring Boot ya ejecuta este build automáticamente antes de arrancar. Solo necesitas correrlo manualmente si modificas el frontend sin querer reiniciar toda la infraestructura.
 
-| Campo      | Valor    |
-|-----------|----------|
-| Matrícula | `367651` |
-| Contraseña | `uach123` |
+---
 
-## Estructura del proyecto
+## Comandos disponibles
 
-```
-src/
-├── pages/          Pantallas de rutas
-├── forms/          Formularios (p. ej. reserva de cubículo)
-├── components/
-│   ├── layout/     Navbar, HeroHeader
-│   ├── cards/      Tarjetas de cubículo, equipo, home
-│   ├── auth/       Carrusel de login
-│   ├── animations/ Overlays de éxito y error
-│   ├── equipment/  Renta de equipo
-│   └── reservation/ Reservas y cubículos
-├── lib/            APIs, sesión, utilidades
-└── data/           Datos mock
-```
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm dev` | Servidor de desarrollo con hot-reload |
+| `pnpm build` | Build de producción → `../SGRC-SPRING/src/main/resources/static/` |
+| `pnpm preview` | Vista previa del build (sin proxy al backend) |
+| `pnpm lint` | Revisión con ESLint |
+
+---
+
+## Usuarios de prueba
+
+| Matrícula | Contraseña | Rol |
+|-----------|------------|-----|
+| `ADM001` | `password123` | Administrador |
+| `367886` | `password123` | Alumno activo |
+| `EMP001` | `password123` | Docente |
+
+---
 
 ## Rutas principales
 
 | Ruta | Descripción |
 |------|-------------|
 | `/login` | Inicio de sesión |
-| `/home` | Inicio |
-| `/reserva-de-cubiculo` | Selección de cubículo |
-| `/reserva-de-cubiculo/:id` | Formulario de reserva |
-| `/mis-reservas` | Reservas del usuario |
-| `/check-in/:id` | Check-in por QR (id = reserva) |
-| `/renta-de-equipo` | Catálogo y solicitud de equipo |
-| `/renta-de-equipo/orden` | Comprobante de solicitud |
+| `/home` | Pantalla de inicio |
+| `/cubicle-reservation` | Selección de cubículo |
+| `/cubicle-reservation/:id` | Formulario de reserva |
+| `/my-reservations` | Reservas del usuario |
+| `/check-in/:id` | Check-in por QR |
+| `/equipment-rental` | Catálogo de equipo |
+| `/equipment-rental/order/:requestId` | Comprobante de solicitud |
+| `/admin` | Panel de administración |
+| `/admin/cubiculos-panel` | Gestión de cubículos |
+| `/admin/equipo-panel` | Catálogo de equipo (admin) |
+| `/admin/equipo-solicitudes` | Solicitudes de renta (admin) |
 
-## Probar check-in con cámara en el celular
+---
 
-1. Mac y celular en la **misma Wi‑Fi**.
-2. En el proyecto: `pnpm dev` (servidor en red local).
-3. En la terminal, abre la URL **Network**, por ejemplo `http://192.168.100.140:5173/`.
-4. Inicia sesión → Mis reservas → Escanear QR (o `/check-in/{id}`).
-5. Si el navegador del celular no abre la cámara con HTTP, prueba en **localhost** en el mismo dispositivo o despliega con HTTPS en staging.
+## Estructura del proyecto
 
-Pantallas de tablet (QR en la puerta): `/entrada/1`, `/entrada/2`, `/entrada/3`.
-
-## Problemas frecuentes
-
-**`pnpm dev` falla tras clonar**  
-Ejecuta `pnpm install` de nuevo. Si persiste el error de `core-js`, revisa que exista `pnpm-workspace.yaml` con `allowBuilds: core-js: true`.
-
-**Puerto 5173 ocupado**  
-Vite usará otro puerto automáticamente o puedes indicar uno:
-
-```bash
-pnpm dev -- --port 3000
 ```
+src/
+├── App.jsx                    Rutas principales
+├── app/
+│   ├── components/
+│   │   ├── auth/              Login
+│   │   ├── common/            Componentes reutilizables, iconos
+│   │   ├── cubicles/          Reservas y check-in
+│   │   ├── dashboard/         Shell de admin y home
+│   │   ├── equipment/         Renta de equipo (usuario y admin)
+│   │   └── layout/            Navbar, cards, menú rápido
+│   └── services/
+│       ├── auth.service.js    Sesión JWT en localStorage
+│       ├── equipment/         Servicios de equipo
+│       └── reservations/      Servicios de reservas
+└── assets/                    Imágenes y fuentes
+```
+
+---
+
+## Probar desde el celular
+
+1. Mac y celular en la misma red Wi-Fi.
+2. Corre `pnpm dev` — Vite publica la URL de red local en la terminal.
+3. En el celular abre esa URL (ej. `https://192.168.1.x:5173`).
+4. Acepta el certificado autofirmado en el browser del celular.
