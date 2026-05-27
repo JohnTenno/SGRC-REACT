@@ -3,40 +3,11 @@
 const SECTION_ICONS = {
   cubiculos: 'cubicle',
   equipo: 'equipment',
-  tutorias: 'tutoring',
 }
 
 const SECTION_ROUTES = {
   cubiculos: '/admin/cubiculos-panel',
-  tutorias: '/professor-tutoring',
 }
-
-const TUTORING_ADMIN_CHILDREN = [
-  {
-    to: '/admin/tutorias-materias',
-    label: 'Catálogo de materias',
-    shortLabel: 'Materias',
-    prefix: '/admin/tutorias-materias',
-  },
-  {
-    to: '/admin/tutorias-docentes',
-    label: 'Catálogo de docentes',
-    shortLabel: 'Docentes',
-    prefix: '/admin/tutorias-docentes',
-  },
-  {
-    to: '/admin/tutorias-perfil-docente',
-    label: 'Perfil del tutor',
-    shortLabel: 'Perfil',
-    prefix: '/admin/tutorias-perfil-docente',
-  },
-  {
-    to: '/admin/tutorias-promover-tutores',
-    label: 'Promover tutores',
-    shortLabel: 'Promover',
-    prefix: '/admin/tutorias-promover-tutores',
-  },
-]
 
 const EQUIPMENT_ADMIN_CHILDREN = [
   {
@@ -63,17 +34,6 @@ export function getDashboardMenuItems() {
         icon: SECTION_ICONS.equipo,
         prefix: '/admin/equipo',
         children: EQUIPMENT_ADMIN_CHILDREN,
-      }
-    }
-
-    if (section.id === 'tutorias') {
-      return {
-        id: section.id,
-        label: section.title,
-        shortLabel: 'Tutorías',
-        icon: SECTION_ICONS.tutorias,
-        prefix: '/admin/tutorias',
-        children: TUTORING_ADMIN_CHILDREN,
       }
     }
 

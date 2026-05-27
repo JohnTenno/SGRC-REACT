@@ -6,15 +6,11 @@ const homeServices = DASHBOARD_SECTIONS.map((section) => ({
   title:
     section.id === 'cubiculos'
       ? 'Reserva de cubículos'
-      : section.id === 'equipo'
-        ? 'Renta de equipo universitario'
-        : 'Tutorías con profesores',
+      : 'Renta de equipo universitario',
   description:
     section.id === 'cubiculos'
       ? 'Consulta disponibilidad en la biblioteca y aparta un espacio de estudio por horario sin traslapes.'
-      : section.id === 'equipo'
-        ? 'Solicita laptops, proyectores y material de apoyo con seguimiento de entrega y devolución.'
-        : 'Agenda sesiones de tutoría impartidas por docentes y confirma tu asistencia desde el mismo sistema.',
+      : 'Solicita laptops, proyectores y material de apoyo con seguimiento de entrega y devolución.',
 }))
 
 export function CardHome({

@@ -53,8 +53,6 @@ const NAV_ICON_MAP = {
   home: HiOutlineHome,
   cubicle: HiOutlineBuildingOffice2,
   equipment: HiOutlineComputerDesktop,
-  tutoring: HiOutlineAcademicCap,
-  'my-tutorings': HiOutlineBookOpen,
   reservations: HiOutlineCalendarDays,
   'my-equipment': HiOutlineClipboardDocumentList,
 }

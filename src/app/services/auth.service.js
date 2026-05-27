@@ -7,7 +7,6 @@ const AUTH_STORAGE_KEY = 'sgrc.auth'
  * @property {string} name
  * @property {string} email
  * @property {string} role
- * @property {boolean} isTutor
  * @property {number} facultyId
  */
 

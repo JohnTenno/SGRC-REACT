@@ -71,16 +71,25 @@ export function EquipmentAdminCard({
 
       <div className={c.body}>
         <h2 className={c.title}>{equipment.type}</h2>
-        <p className={c.stock}>
-          Disponibles:{' '}
-          <span
-            className={`${c.stockValue} ${
-              equipment.totalStock <= 0 ? 'text-red-600' : 'text-uach-gold-600'
-            }`}
-          >
-            {equipment.totalStock}
-          </span>
-        </p>
+        <div className="flex flex-col gap-0.5">
+          <p className={c.stock}>
+            Disponibles:{' '}
+            <span
+              className={`${c.stockValue} ${
+                equipment.availableStock <= 0 ? 'text-red-600' : 'text-uach-gold-600'
+              }`}
+            >
+              {equipment.availableStock}
+            </span>
+            <span className="text-uach-purple-900/40"> / {equipment.totalStock}</span>
+          </p>
+          <p className={c.stock}>
+            Prestados:{' '}
+            <span className={`${c.stockValue} ${equipment.totalStock - equipment.availableStock > 0 ? 'text-uach-purple-700' : 'text-uach-purple-900/40'}`}>
+              {equipment.totalStock - equipment.availableStock}
+            </span>
+          </p>
+        </div>
 
         <div className="mt-auto grid grid-cols-2 gap-2 pt-4">
           <button

@@ -2,7 +2,6 @@
 import { isNavLinkActive, NavIcon } from '@/app/components/layout/navConfig'
 
 const QUICK_MENU_LINKS = [
-  { to: '/my-tutorings', label: 'Mis tutorías', icon: 'my-tutorings', end: true },
   { to: '/my-reservations', label: 'Mis reservas', icon: 'reservations', end: true },
   { to: '/my-equipment-requests', label: 'Mi equipo', icon: 'my-equipment', end: true },
 ]
@@ -35,7 +34,7 @@ export function QuickMenu() {
       <p className="font-alverata text-lg font-semibold uppercase tracking-wide text-uach-gold-400 sm:text-xl">
         Menú rápido
       </p>
-      <ul className="grid w-full grid-cols-3 gap-3">
+      <ul className="grid w-full grid-cols-2 gap-3">
         {QUICK_MENU_LINKS.map((item) => (
           <li key={item.to} className="min-w-0">
             <QuickMenuLink {...item} />
