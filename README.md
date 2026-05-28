@@ -4,7 +4,8 @@ Interfaz web del **Sistema de Gestión de Recursos del Centro de Cómputo — UA
 En producción, este código se compila y sirve desde el backend Spring Boot.  
 Este repositorio es el entorno de **desarrollo** del frontend.
 
-Stack: **React 19**, **Vite 8**, **React Router 7**, **Tailwind CSS 4**.
+Stack: **React 19**, **Vite 8**, **React Router 7**, **Tailwind CSS 4**.  
+Se comunica con el backend vía API REST y **WebSocket (STOMP)** para notificaciones en tiempo real.
 
 ---
 
@@ -46,8 +47,8 @@ Abre **`https://localhost:5173`** en el navegador.
 Acepta el certificado autofirmado si el browser lo pide.
 
 El servidor de desarrollo hace proxy automático:
-- `/api/*` → `https://localhost:3000`
-- `/ws/*` → `wss://localhost:3000`
+- `/api/*` → `https://localhost:3000` (API REST)
+- `/ws/*` → `wss://localhost:3000` (WebSocket — notificaciones en tiempo real)
 
 ---
 
@@ -99,10 +100,12 @@ Spring Boot los sirve automáticamente en `https://localhost:3000`.
 | `/check-in/:id` | Check-in por QR |
 | `/equipment-rental` | Catálogo de equipo |
 | `/equipment-rental/order/:requestId` | Comprobante de solicitud |
-| `/admin` | Panel de administración |
-| `/admin/cubiculos-panel` | Gestión de cubículos |
+| `/admin` | Dashboard de administración |
+| `/admin/cubiculos-panel` | Gestión de cubículos (CRUD + filtros + paginación) |
 | `/admin/equipo-panel` | Catálogo de equipo (admin) |
 | `/admin/equipo-solicitudes` | Solicitudes de renta (admin) |
+| `/my-equipment-requests` | Historial de solicitudes de equipo del alumno |
+| `/lobby/:cubicleId` | Lobby de check-in QR para un cubículo específico |
 
 ---
 
